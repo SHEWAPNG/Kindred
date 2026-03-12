@@ -7,11 +7,20 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import datetime
+from flask import Flask, send_from_directory
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('.', filename)
 
 @app.after_request
 def after_request(response):

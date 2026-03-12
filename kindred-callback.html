@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kindred — Confirming Payment</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0f1623;--amber:#e8a838;--amber-dark:#c88a20;--cream:#f7f2e8;--text-light:#c8bfad;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy);color:var(--cream);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+  .box{text-align:center;max-width:480px;padding:48px 32px;}
+  .logo{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--amber);margin-bottom:40px;display:block;text-decoration:none;}
+  .icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 24px;}
+  .icon-loading{background:rgba(232,168,56,0.1);border:2px solid rgba(232,168,56,0.3);animation:pulse 1.5s infinite;}
+  .icon-success{background:rgba(40,200,100,0.1);border:2px solid rgba(40,200,100,0.4);}
+  .icon-error{background:rgba(255,80,80,0.1);border:2px solid rgba(255,80,80,0.3);}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+  h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;margin-bottom:12px;}
+  p{font-size:0.95rem;color:var(--text-light);line-height:1.7;margin-bottom:28px;}
+  .btn{display:inline-block;background:var(--amber);color:var(--navy);padding:14px 36px;border-radius:50px;font-weight:700;font-size:0.95rem;text-decoration:none;transition:all 0.2s;}
+  .btn:hover{background:var(--amber-dark);}
+  .btn-outline{background:transparent;color:var(--cream);border:1px solid rgba(255,255,255,0.2);margin-left:12px;}
+  .ref{font-size:0.78rem;color:var(--text-light);margin-top:16px;opacity:0.6;}
+  .debug{font-size:0.75rem;color:var(--text-light);margin-top:20px;padding:12px;background:rgba(255,255,255,0.04);border-radius:8px;text-align:left;word-break:break-all;}
+</style>
+</head>
+<body>
+<div class="box">
+  <a href="kindred.html" class="logo">Kindred</a>
+
+  <div id="loadingState">
+    <div class="icon icon-loading">⏳</div>
+    <h1>Confirming your payment...</h1>
+    <p>Please wait while we verify your payment. This only takes a second.</p>
+  </div>
+
+  <div id="successState" style="display:none">
+    <div class="icon icon-success">🎉</div>
+    <h1>Payment confirmed!</h1>
+    <p>Welcome to Kindred <span id="planName">Pro</span>. Your account is now active.</p>
+    <a href="kindred-app.html" class="btn">Open Kindred →</a>
+    <div class="ref" id="refDisplay"></div>
+  </div>
+
+  <div id="errorState" style="display:none">
+    <div class="icon icon-error">❌</div>
+    <h1>Something went wrong</h1>
+    <p id="errorMsg">We could not verify your payment. If you were charged, please contact support with your payment reference below.</p>
+    <a href="kindred-pricing.html" class="btn">Try Again</a>
+    <div class="ref" id="errorRef"></div>
+    <div class="debug" id="debugInfo" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+  const BACKEND = 'http://127.0.0.1:5000';
+
+  function show(id) {
+    ['loadingState','successState','errorState'].forEach(s => {
+      document.getElementById(s).style.display = s === id ? 'block' : 'none';
+    });
+  }
+
+  async function verifyPayment() {
+    const params    = new URLSearchParams(window.location.search);
+    const reference = params.get('reference') || params.get('trxref');
+
+    console.log('Reference:', reference);
+
+    if (!reference) {
+      show('errorState');
+      document.getElementById('errorMsg').textContent = 'No payment reference found. Please try paying again.';
+      return;
+    }
+
+    const plan  = sessionStorage.getItem('pending_plan')
+               || localStorage.getItem('pending_plan')
+               || 'pro';
+    const email = sessionStorage.getItem('pending_email')
+               || localStorage.getItem('pending_email')
+               || localStorage.getItem('kindred_email')
+               || '';
+
+    document.getElementById('refDisplay').textContent = 'Ref: ' + reference;
+    document.getElementById('errorRef').textContent   = 'Ref: ' + reference;
+
+    // Try backend up to 3 times (sometimes it needs a moment)
+    let lastError = '';
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        document.querySelector('#loadingState p').textContent =
+          'Verifying payment... (attempt ' + attempt + ' of 3)';
+
+        const res    = await fetch(BACKEND + '/verify/paystack', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ reference, plan, email })
+        });
+        const result = await res.json();
+        console.log('Result:', result);
+
+        if (result.success) {
+          localStorage.setItem('kindred_plan',  result.plan  || plan);
+          localStorage.setItem('kindred_email', result.email || email);
+          sessionStorage.removeItem('pending_plan');
+          sessionStorage.removeItem('pending_email');
+          localStorage.removeItem('pending_plan');
+          localStorage.removeItem('pending_email');
+
+          document.getElementById('planName').textContent = (result.plan || plan) === 'pro' ? 'Pro' : 'Pro';
+          show('successState');
+          return;
+        } else {
+          show('errorState');
+          document.getElementById('errorMsg').textContent = result.error || 'Verification failed.';
+          document.getElementById('debugInfo').style.display = 'block';
+          document.getElementById('debugInfo').textContent   = JSON.stringify(result, null, 2);
+          return;
+        }
+
+      } catch (err) {
+        lastError = err.message;
+        console.warn('Attempt ' + attempt + ' failed:', err.message);
+        if (attempt < 3) await new Promise(r => setTimeout(r, 1500));
+      }
+    }
+
+    // All 3 attempts failed — backend is definitely not running
+    show('errorState');
+    document.getElementById('errorMsg').innerHTML =
+      '⚠️ Could not reach your backend.<br><br>' +
+      '<strong style="color:var(--cream)">Make sure this is running:</strong><br>' +
+      '<code style="background:rgba(255,255,255,0.08);padding:8px 12px;border-radius:6px;display:inline-block;margin:10px 0;font-size:0.85rem;">python app.py</code><br><br>' +
+      'Then <a href="' + window.location.href + '" style="color:var(--amber)">click here to retry</a>.';
+    document.getElementById('debugInfo').style.display = 'block';
+    document.getElementById('debugInfo').textContent   = 'Error: ' + lastError + '\nReference: ' + reference;
+  }
+
+  verifyPayment();
+</script>
+</body>
+</html>

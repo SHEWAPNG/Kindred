@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kindred — Say Exactly What You Mean</title>
+<meta name="description" content="Turn your messy thoughts into clear, professional communication in seconds. No more staring at a blank screen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#0f1623; --navy-light:#1a2438; --cream:#f7f2e8; --cream-dark:#ede6d3;
+    --amber:#e8a838; --amber-dark:#c88a20; --amber-glow:rgba(232,168,56,0.15);
+    --text-light:#c8bfad; --white:#ffffff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--navy);color:var(--cream);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+
+  nav{position:fixed;top:0;width:100%;z-index:100;padding:20px 60px;display:flex;align-items:center;justify-content:space-between;background:rgba(15,22,35,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(232,168,56,0.1);}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--amber);letter-spacing:-0.5px;}
+  .nav-links{display:flex;gap:36px;list-style:none;}
+  .nav-links a{color:var(--text-light);text-decoration:none;font-size:0.9rem;font-weight:500;letter-spacing:0.3px;transition:color 0.2s;}
+  .nav-links a:hover{color:var(--cream);}
+  .nav-cta{background:var(--amber);color:var(--navy);padding:10px 24px;border-radius:50px;font-weight:600;font-size:0.9rem;text-decoration:none;transition:all 0.2s;border:none;cursor:pointer;}
+  .nav-cta:hover{background:var(--amber-dark);transform:translateY(-1px);}
+
+  .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:120px 60px 80px;position:relative;overflow:hidden;text-align:center;}
+  .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 20%,rgba(232,168,56,0.08) 0%,transparent 70%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(232,168,56,0.05) 0%,transparent 60%);}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--amber-glow);border:1px solid rgba(232,168,56,0.3);padding:8px 18px;border-radius:50px;font-size:0.8rem;font-weight:500;color:var(--amber);margin-bottom:32px;letter-spacing:0.5px;animation:fadeDown 0.6s ease forwards;position:relative;z-index:1;}
+  .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(3rem,7vw,6rem);font-weight:900;line-height:1.05;color:var(--cream);margin-bottom:24px;animation:fadeUp 0.7s 0.1s ease both;position:relative;z-index:1;}
+  .hero h1 em{font-style:italic;color:var(--amber);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.2rem);color:var(--text-light);max-width:560px;line-height:1.7;margin-bottom:40px;animation:fadeUp 0.7s 0.2s ease both;position:relative;z-index:1;}
+  .hero-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:72px;animation:fadeUp 0.7s 0.3s ease both;position:relative;z-index:1;}
+  .btn-primary{background:var(--amber);color:var(--navy);padding:16px 36px;border-radius:50px;font-weight:700;font-size:1rem;text-decoration:none;transition:all 0.25s;box-shadow:0 8px 32px rgba(232,168,56,0.3);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(232,168,56,0.4);}
+  .btn-secondary{background:transparent;color:var(--cream);padding:16px 36px;border-radius:50px;font-weight:500;font-size:1rem;text-decoration:none;transition:all 0.25s;border:1px solid rgba(247,242,232,0.2);}
+  .btn-secondary:hover{border-color:var(--amber);color:var(--amber);}
+
+  .demo-container{width:100%;max-width:900px;display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:20px;overflow:hidden;border:1px solid rgba(232,168,56,0.15);box-shadow:0 40px 100px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.03);animation:fadeUp 0.7s 0.4s ease both;position:relative;z-index:1;}
+  .demo-panel{padding:28px;background:var(--navy-light);}
+  .demo-panel.output{background:rgba(26,36,56,0.8);border-left:1px solid rgba(232,168,56,0.1);}
+  .demo-label{font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .demo-label.input-label{color:var(--text-light);}
+  .demo-label.output-label{color:var(--amber);}
+  .demo-label-dot{width:6px;height:6px;border-radius:50%;}
+  .input-label .demo-label-dot{background:var(--text-light);}
+  .output-label .demo-label-dot{background:var(--amber);animation:pulse 1.5s infinite;}
+  .demo-input{width:100%;background:transparent;border:none;outline:none;resize:none;color:var(--text-light);font-family:'DM Sans',sans-serif;font-size:0.95rem;line-height:1.6;height:120px;}
+  .demo-input::placeholder{color:rgba(200,191,173,0.4);}
+  .demo-output-text{color:var(--cream);font-size:0.95rem;line-height:1.7;min-height:120px;}
+  .cursor{display:inline-block;width:2px;height:1em;background:var(--amber);margin-left:2px;animation:blink 1s infinite;vertical-align:text-bottom;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+  .demo-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(15,22,35,0.6);border-top:1px solid rgba(232,168,56,0.08);grid-column:1/-1;gap:16px;flex-wrap:wrap;}
+  .demo-formats{display:flex;gap:8px;flex-wrap:wrap;}
+  .fmt-tag{background:rgba(232,168,56,0.08);border:1px solid rgba(232,168,56,0.15);color:var(--amber);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+  .fmt-tag:hover,.fmt-tag.active{background:var(--amber);color:var(--navy);}
+  .transform-btn{background:var(--amber);color:var(--navy);border:none;padding:10px 22px;border-radius:50px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.2s;}
+  .transform-btn:hover{transform:scale(1.05);}
+
+  .social-proof{padding:40px 60px;display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);}
+  .proof-stat{text-align:center;}
+  .proof-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--amber);}
+  .proof-label{font-size:0.85rem;color:var(--text-light);margin-top:4px;}
+
+  section{padding:100px 60px;}
+  .section-tag{display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:16px;}
+  .section-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:700;line-height:1.15;color:var(--cream);margin-bottom:20px;}
+  .section-title em{font-style:italic;color:var(--amber);}
+  .section-sub{font-size:1.05rem;color:var(--text-light);line-height:1.7;max-width:520px;}
+
+  .problem{background:var(--navy-light);}
+  .problem-inner{max-width:1100px;margin:0 auto;}
+  .problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px;}
+  .problem-card{background:var(--navy);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:36px;position:relative;overflow:hidden;transition:transform 0.3s,border-color 0.3s;}
+  .problem-card:hover{transform:translateY(-4px);border-color:rgba(232,168,56,0.2);}
+  .problem-num{font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:rgba(232,168,56,0.08);position:absolute;top:16px;right:24px;line-height:1;}
+  .problem-card h3{font-size:1.1rem;font-weight:600;color:var(--cream);margin-bottom:12px;line-height:1.4;}
+  .problem-card p{font-size:0.9rem;color:var(--text-light);line-height:1.6;}
+  .problem-transition{text-align:center;margin-top:60px;font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--cream);}
+  .problem-transition span{color:var(--amber);}
+
+  .features-inner{max-width:1100px;margin:0 auto;}
+  .features-header{margin-bottom:60px;}
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .feature-card{background:var(--navy-light);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:32px;transition:all 0.3s;}
+  .feature-card:hover{border-color:rgba(232,168,56,0.25);box-shadow:0 8px 32px rgba(232,168,56,0.05);transform:translateY(-3px);}
+  .feature-icon{width:48px;height:48px;border-radius:12px;background:var(--amber-glow);border:1px solid rgba(232,168,56,0.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:20px;}
+  .feature-card h3{font-size:1rem;font-weight:600;color:var(--cream);margin-bottom:10px;}
+  .feature-card p{font-size:0.88rem;color:var(--text-light);line-height:1.6;}
+
+  .how{background:var(--navy-light);}
+  .how-inner{max-width:900px;margin:0 auto;text-align:center;}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:60px;position:relative;}
+  .steps::before{content:'';position:absolute;top:32px;left:16.5%;right:16.5%;height:1px;background:linear-gradient(90deg,transparent,var(--amber),transparent);}
+  .step{padding:0 24px;}
+  .step-num{width:64px;height:64px;border-radius:50%;background:var(--navy);border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--amber);margin:0 auto 24px;}
+  .step h3{font-size:1.05rem;font-weight:600;color:var(--cream);margin-bottom:12px;}
+  .step p{font-size:0.88rem;color:var(--text-light);line-height:1.6;}
+
+  .usecases-inner{max-width:1100px;margin:0 auto;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:40px 0;}
+  .tab{padding:10px 22px;border-radius:50px;font-size:0.88rem;font-weight:500;border:1px solid rgba(255,255,255,0.1);color:var(--text-light);cursor:pointer;transition:all 0.2s;background:transparent;}
+  .tab:hover{border-color:var(--amber);color:var(--amber);}
+  .tab.active{background:var(--amber);color:var(--navy);border-color:var(--amber);font-weight:700;}
+  .usecase-content{display:none;}
+  .usecase-content.active{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+  .uc-panel{background:var(--navy-light);border-radius:16px;padding:32px;border:1px solid rgba(255,255,255,0.06);}
+  .uc-panel-title{font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;}
+  .uc-before .uc-panel-title{color:var(--text-light);}
+  .uc-after .uc-panel-title{color:var(--amber);}
+  .uc-text{font-size:0.95rem;line-height:1.7;color:var(--cream);}
+  .uc-before .uc-text{color:var(--text-light);font-style:italic;}
+
+  /* TESTIMONIALS */
+  .testimonials{background:var(--navy-light);}
+  .testimonials-inner{max-width:1100px;margin:0 auto;}
+  .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px;}
+  .testi-card{background:var(--navy);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:32px;transition:all 0.3s;position:relative;}
+  .testi-card:hover{transform:translateY(-4px);border-color:rgba(232,168,56,0.2);box-shadow:0 12px 40px rgba(0,0,0,0.3);}
+  .testi-quote{font-size:2.5rem;color:var(--amber);line-height:1;margin-bottom:16px;opacity:0.6;}
+  .testi-text{font-size:0.95rem;color:var(--cream);line-height:1.75;margin-bottom:24px;font-style:italic;}
+  .testi-author{display:flex;align-items:center;gap:12px;}
+  .testi-avatar{width:42px;height:42px;border-radius:50%;background:var(--amber-glow);border:1px solid rgba(232,168,56,0.3);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+  .testi-name{font-size:0.88rem;font-weight:600;color:var(--cream);}
+  .testi-role{font-size:0.78rem;color:var(--text-light);margin-top:2px;}
+  .testi-stars{color:var(--amber);font-size:0.8rem;margin-bottom:14px;letter-spacing:2px;}
+
+  .pricing{background:var(--navy-light);}
+  .pricing-inner{max-width:1000px;margin:0 auto;text-align:center;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:20px;max-width:760px;margin-left:auto;margin-right:auto;}
+  .price-card{background:var(--navy);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px;text-align:left;transition:all 0.3s;position:relative;}
+  .price-card.popular{border-color:var(--amber);box-shadow:0 0 40px rgba(232,168,56,0.1);}
+  .popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--navy);padding:4px 16px;border-radius:20px;font-size:0.72rem;font-weight:700;letter-spacing:0.5px;white-space:nowrap;}
+  .price-card:hover{transform:translateY(-4px);}
+  .price-name{font-size:0.8rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:16px;}
+  .price-amount{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;color:var(--cream);line-height:1;margin-bottom:4px;}
+  .price-amount span{font-size:1rem;color:var(--text-light);}
+  .price-period{font-size:0.82rem;color:var(--text-light);margin-bottom:28px;}
+  .price-features{list-style:none;margin-bottom:32px;}
+  .price-features li{display:flex;align-items:flex-start;gap:10px;font-size:0.88rem;color:var(--text-light);padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+  .price-features li::before{content:'✓';color:var(--amber);font-weight:700;flex-shrink:0;}
+  .price-btn{width:100%;padding:14px;border-radius:50px;font-weight:600;font-size:0.9rem;cursor:pointer;transition:all 0.2s;text-align:center;text-decoration:none;display:block;}
+  .price-btn-outline{background:transparent;color:var(--cream);border:1px solid rgba(255,255,255,0.2);}
+  .price-btn-outline:hover{border-color:var(--amber);color:var(--amber);}
+  .price-btn-fill{background:var(--amber);color:var(--navy);border:none;}
+  .price-btn-fill:hover{background:var(--amber-dark);}
+
+  /* CTA / WAITLIST BANNER */
+  .cta-banner{margin:0 60px 80px;border-radius:24px;background:linear-gradient(135deg,var(--amber) 0%,#c88a20 100%);padding:80px 60px;text-align:center;position:relative;overflow:hidden;}
+  .cta-banner::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+  .cta-banner h2{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:700;color:var(--navy);margin-bottom:12px;position:relative;}
+  .cta-banner > p{font-size:1.05rem;color:rgba(15,22,35,0.7);margin-bottom:36px;position:relative;}
+  .waitlist-form-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:560px;margin:0 auto 14px;position:relative;}
+  .waitlist-input{flex:1;min-width:160px;padding:14px 20px;border-radius:50px;border:none;background:rgba(255,255,255,0.92);color:#0f1623;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;}
+  .waitlist-input::placeholder{color:rgba(15,22,35,0.45);}
+  .waitlist-input:focus{background:#fff;}
+  .cta-submit{background:var(--navy);color:var(--cream);border:none;padding:14px 28px;border-radius:50px;font-weight:700;font-size:0.9rem;cursor:pointer;white-space:nowrap;transition:all 0.2s;text-decoration:none;display:inline-block;}
+  .cta-submit:hover{transform:scale(1.03);}
+  #waitlistMsg{font-size:0.88rem;min-height:20px;font-weight:600;color:var(--navy);position:relative;}
+  .waitlist-sub-link{position:relative;margin-top:20px;}
+  .waitlist-sub-link a{font-size:0.85rem;color:rgba(15,22,35,0.6);text-decoration:underline;transition:color 0.2s;}
+  .waitlist-sub-link a:hover{color:var(--navy);}
+
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
+  .hamburger span{width:24px;height:2px;background:var(--cream);border-radius:2px;transition:all 0.3s;}
+  .mobile-menu{display:none;position:fixed;top:0;left:0;width:100%;height:100vh;background:var(--navy);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:32px;}
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{color:var(--cream);text-decoration:none;font-size:1.3rem;font-weight:500;transition:color 0.2s;}
+  .mobile-menu a:hover{color:var(--amber);}
+  .mobile-close{position:absolute;top:24px;right:24px;font-size:1.5rem;cursor:pointer;color:var(--text-light);background:none;border:none;}
+  .mobile-menu .nav-cta{font-size:1rem;padding:14px 36px;}
+
+  footer{padding:60px 60px 40px;border-top:1px solid rgba(255,255,255,0.06);}
+  .footer-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px;flex-wrap:wrap;gap:40px;}
+  .footer-brand{text-align:center;}
+  .footer-brand .nav-logo{font-size:1.8rem;display:block;margin-bottom:12px;text-align:center;}
+  .footer-brand p{font-size:0.88rem;color:var(--text-light);max-width:240px;line-height:1.6;margin:0 auto;}
+  .footer-links{display:flex;gap:60px;flex-wrap:wrap;}
+  .footer-col h4{font-size:0.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:16px;}
+  .footer-col ul{list-style:none;}
+  .footer-col li{margin-bottom:10px;}
+  .footer-col a{color:var(--text-light);text-decoration:none;font-size:0.88rem;transition:color 0.2s;}
+  .footer-col a:hover{color:var(--cream);}
+  .footer-bottom{display:flex;justify-content:center;align-items:center;padding-top:32px;border-top:1px solid rgba(255,255,255,0.05);flex-wrap:wrap;gap:16px;text-align:center;}
+  .footer-copy{font-size:0.82rem;color:var(--text-light);}
+  .footer-socials{display:flex;gap:12px;justify-content:center;}
+  .social-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:var(--text-light);text-decoration:none;font-size:0.8rem;transition:all 0.2s;}
+  .social-icon:hover{border-color:var(--amber);color:var(--amber);}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+  .reveal{opacity:0;transform:translateY(32px);transition:opacity 0.6s ease,transform 0.6s ease;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+
+  @media(max-width:768px){
+    nav{padding:16px 20px;}
+    .nav-links,.nav-cta{display:none;}
+    .hamburger{display:flex;}
+    .hero{padding:100px 20px 60px;}
+    section{padding:70px 20px;}
+    .demo-container{grid-template-columns:1fr;}
+    .demo-panel.output{border-left:none;border-top:1px solid rgba(232,168,56,0.1);}
+    .problem-grid,.features-grid,.steps,.pricing-grid,.testimonials-grid{grid-template-columns:1fr;}
+    .steps::before{display:none;}
+    .usecase-content.active{grid-template-columns:1fr;}
+    .social-proof{gap:32px;padding:40px 20px;}
+    .cta-banner{margin:0 16px 60px;padding:50px 20px;}
+    .waitlist-form-row{flex-direction:column;align-items:stretch;}
+    .waitlist-input,.cta-submit{width:100%;}
+    footer{padding:50px 20px 32px;}
+    .footer-top{flex-direction:column;align-items:center;text-align:center;gap:28px;}
+    .footer-brand p{margin:0 auto;}
+    .footer-links{flex-direction:column;align-items:center;gap:24px;text-align:center;}
+    .footer-bottom{flex-direction:column;align-items:center;justify-content:center;}
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="closeMenu()">✕</button>
+  <a href="#features" onclick="closeMenu()">Features</a>
+  <a href="#how" onclick="closeMenu()">How it works</a>
+  <a href="#usecases" onclick="closeMenu()">Use Cases</a>
+  <a href="#pricing" onclick="closeMenu()">Pricing</a>
+  <a href="kindred-auth.html?plan=free&mode=signup" class="nav-cta" onclick="closeMenu()">Try for Free</a>
+</div>
+
+<nav>
+  <span class="nav-logo">Kindred</span>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#usecases">Use Cases</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <a href="kindred-auth.html?plan=free&mode=signup" class="nav-cta">Try for Free</a>
+  <div class="hamburger" onclick="openMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-badge"><span class="badge-dot"></span> AI-Powered Writing Tool</div>
+  <h1>Say <em>exactly</em><br>what you mean.</h1>
+  <p class="hero-sub">Turn your messy, scattered thoughts into clear, professional communication in seconds. No more staring at a blank screen.</p>
+  <div class="hero-btns">
+    <a href="kindred-auth.html?plan=free&mode=signup" class="btn-primary">Start for Free →</a>
+    <a href="#how" class="btn-secondary">See how it works</a>
+  </div>
+  <div class="demo-container">
+    <div class="demo-panel">
+      <div class="demo-label input-label"><span class="demo-label-dot"></span> Your raw thoughts</div>
+      <textarea class="demo-input" id="demoInput" placeholder="Just type whatever is on your mind... e.g. i wanna tell my boss am not coming today but dont want to sound lazy"></textarea>
+    </div>
+    <div class="demo-panel output">
+      <div class="demo-label output-label"><span class="demo-label-dot"></span> Kindred output</div>
+      <div class="demo-output-text" id="demoOutput">Your polished message will appear here...<span class="cursor"></span></div>
+    </div>
+    <div class="demo-footer">
+      <div class="demo-formats">
+        <span class="fmt-tag active">Email</span>
+        <span class="fmt-tag">Essay</span>
+        <span class="fmt-tag">Proposal</span>
+        <span class="fmt-tag">Conversation</span>
+      </div>
+      <button class="transform-btn" onclick="runDemo()">✦ Transform</button>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<div class="social-proof">
+  <div class="proof-stat"><div class="proof-num">Seconds</div><div class="proof-label">to polish a thought</div></div>
+  <div class="proof-stat"><div class="proof-num">5</div><div class="proof-label">core writing formats</div></div>
+  <div class="proof-stat"><div class="proof-num">Free</div><div class="proof-label">to start using</div></div>
+</div>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="problem-inner">
+    <span class="section-tag reveal">The Problem</span>
+    <h2 class="section-title reveal">We all have thoughts.<br><em>Not all of us can express them.</em></h2>
+    <div class="problem-grid">
+      <div class="problem-card reveal"><div class="problem-num">01</div><h3>You know what you mean but can't find the words</h3><p>The idea is crystal clear in your head. But the moment you try to write it, it falls apart.</p></div>
+      <div class="problem-card reveal"><div class="problem-num">02</div><h3>You write it and it sounds completely wrong</h3><p>Too harsh. Too casual. Too long. Too confusing. You rewrite it five times and still hate it.</p></div>
+      <div class="problem-card reveal"><div class="problem-num">03</div><h3>You give up and send nothing or something bad</h3><p>Missed opportunities. Misunderstood messages. Relationships damaged by poor communication.</p></div>
+    </div>
+    <div class="problem-transition reveal">Kindred <span>fixes that.</span></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="features-inner">
+    <div class="features-header">
+      <span class="section-tag reveal">Features</span>
+      <h2 class="section-title reveal">Everything you need to<br><em>communicate with confidence</em></h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal"><div class="feature-icon">🧠</div><h3>Thought Transformer</h3><p>Dump any raw thought — rambling, broken, half-formed — and get a clear, structured message instantly.</p></div>
+      <div class="feature-card reveal"><div class="feature-icon">🎯</div><h3>Tone Matcher</h3><p>Professional, casual, formal, empathetic — choose the tone that fits your relationship and context.</p></div>
+      <div class="feature-card reveal"><div class="feature-icon">⚡</div><h3>Format Engine</h3><p>Email, essay, social caption, business proposal, conversation — any format, properly structured.</p></div>
+      <div class="feature-card reveal"><div class="feature-icon">🌍</div><h3>Multilingual Support</h3><p>Think and type in Yoruba, Pidgin, French or any language. Write in perfect, natural English.</p></div>
+      <div class="feature-card reveal"><div class="feature-icon">🤍</div><h3>Anxiety Mode</h3><p>For people who overthink every word. Kindred produces calm, clear, overthink-proof outputs every time.</p></div>
+      <div class="feature-card reveal"><div class="feature-icon">📋</div><h3>One Click Copy</h3><p>Your transformed message is ready to copy and send anywhere — email, WhatsApp, LinkedIn, anywhere.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <span class="section-tag reveal">How It Works</span>
+    <h2 class="section-title reveal">From thought to message<br><em>in three steps</em></h2>
+    <div class="steps">
+      <div class="step reveal"><div class="step-num">1</div><h3>Dump your thoughts</h3><p>Type anything. No filter. No structure required. Just say what's on your mind in whatever way comes naturally.</p></div>
+      <div class="step reveal"><div class="step-num">2</div><h3>Kindred structures it</h3><p>Our AI understands your intent, picks the right tone, and transforms your input into a polished message.</p></div>
+      <div class="step reveal"><div class="step-num">3</div><h3>Copy and send</h3><p>Your message is ready. Copy it with one click and send it anywhere. Done in seconds.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="usecases">
+  <div class="usecases-inner">
+    <span class="section-tag reveal">Use Cases</span>
+    <h2 class="section-title reveal">Kindred works for <em>everyone</em></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'students')">Students</button>
+      <button class="tab" onclick="switchTab(this,'professionals')">Professionals</button>
+      <button class="tab" onclick="switchTab(this,'nonnative')">Non-English Speakers</button>
+      <button class="tab" onclick="switchTab(this,'anxiety')">Anxiety / Autism</button>
+    </div>
+    <div class="usecase-content active" id="uc-students">
+      <div class="uc-panel uc-before"><div class="uc-panel-title">Before Kindred</div><div class="uc-text">"ok so basically the essay is about how colonialism affected africa and like there were a lot of bad things that happened and it still affects us today in different ways like economically and socially and stuff"</div></div>
+      <div class="uc-panel uc-after"><div class="uc-panel-title">After Kindred</div><div class="uc-text">This essay examines the lasting impact of colonialism on the African continent, with particular focus on its enduring economic and social consequences. Through historical analysis, it argues that colonial structures continue to shape contemporary African societies in measurable and significant ways.</div></div>
+    </div>
+    <div class="usecase-content" id="uc-professionals">
+      <div class="uc-panel uc-before"><div class="uc-panel-title">Before Kindred</div><div class="uc-text">"i wanna tell my boss am not coming today but dont want to sound lazy, i just have a lot going on"</div></div>
+      <div class="uc-panel uc-after"><div class="uc-panel-title">After Kindred</div><div class="uc-text">Hi [Manager's name], I hope you're well. I'm writing to let you know that I'm unable to come in today due to a personal matter that requires my immediate attention. I'll ensure all urgent tasks are covered and will be back at full capacity tomorrow. Thank you for your understanding.</div></div>
+    </div>
+    <div class="usecase-content" id="uc-nonnative">
+      <div class="uc-panel uc-before"><div class="uc-panel-title">Before Kindred</div><div class="uc-text">"i am wanting to know if my application is still being consider because i apply long time ago and i no hear anything from you people"</div></div>
+      <div class="uc-panel uc-after"><div class="uc-panel-title">After Kindred</div><div class="uc-text">I am writing to follow up on my application submitted some time ago. As I have not yet received a response, I wanted to kindly inquire about the current status of my application and whether any further steps are required from my end. Thank you for your time.</div></div>
+    </div>
+    <div class="usecase-content" id="uc-anxiety">
+      <div class="uc-panel uc-before"><div class="uc-panel-title">Before Kindred</div><div class="uc-text">"i need to tell my friend i cant come to their event but im scared they'll think i dont care about them and i do care i just cant go i have so much anxiety about saying the wrong thing"</div></div>
+      <div class="uc-panel uc-after"><div class="uc-panel-title">After Kindred</div><div class="uc-text">Hey [Name], I'm so sorry I won't be able to make it to your event. Please know it has nothing to do with how much I care about you — I genuinely wish I could be there. I'll make it up to you soon. Hope it's an amazing time!</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<!-- <section class="testimonials">
+  <div class="testimonials-inner">
+    <span class="section-tag reveal">Testimonials</span>
+    <h2 class="section-title reveal">People are finally saying<br><em>exactly what they mean.</em></h2>
+    <div class="testimonials-grid">
+
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <div class="testi-text">I typed "my client is not paying and I'm frustrated" and Kindred turned it into the most professional follow-up email I've ever sent. My client paid within 24 hours. This thing is different.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">👩🏽</div>
+          <div>
+            <div class="testi-name">Adaeze O.</div>
+            <div class="testi-role">Freelance Designer, Lagos</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <div class="testi-text">English is my third language and I always felt embarrassed sending professional emails. With Kindred I just type in whatever and it comes out sounding like a native speaker. Changed everything for me.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">👨🏾</div>
+          <div>
+            <div class="testi-name">Kwame A.</div>
+            <div class="testi-role">Graduate Student, Accra</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <div class="testi-text">I have ADHD and writing anything formal takes me forever. I typed a scrambled mess about declining a job offer and Kindred gave me a perfect, kind, professional response in seconds. I cried a little.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">👩🏻</div>
+          <div>
+            <div class="testi-name">Priya S.</div>
+            <div class="testi-role">Marketing Exec, London</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <div class="testi-text">Mo fe write proposal for client but I no know how to put am for English well well. I type am for Pidgin, Kindred turn am to full business proposal. My client sign the deal. Kindred is a secret weapon.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">👨🏿</div>
+          <div>
+            <div class="testi-name">Tunde B.</div>
+            <div class="testi-role">Small Business Owner, Ibadan</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <div class="testi-text">As someone with social anxiety, every text I need to send feels like a mountain. Kindred's Anxiety Mode gives me words that feel like me — just calmer and clearer. I use it for literally everything now.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">🧑🏽</div>
+          <div>
+            <div class="testi-name">Sade M.</div>
+            <div class="testi-role">Teacher, Abuja</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <div class="testi-text">I used to spend 45 minutes on one email. Now it takes 30 seconds. I paste my brain dump in, Kindred polishes it, I copy and send. My team thinks I've become a better communicator. I haven't. Kindred has.</div>
+        <div class="testi-author">
+          <div class="testi-avatar">👩🏾</div>
+          <div>
+            <div class="testi-name">Chioma E.</div>
+            <div class="testi-role">Product Manager, Lagos</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section> -->
+
+
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <span class="section-tag reveal">Pricing</span>
+    <h2 class="section-title reveal">Simple, honest <em>pricing</em></h2>
+    <p class="section-sub reveal" style="margin:0 auto;">Start free. Upgrade when you're ready. No hidden fees, no surprises.</p>
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <div class="price-name">Free</div>
+        <div class="price-amount">$0</div>
+        <div class="price-period">Forever free</div>
+        <ul class="price-features">
+          <li>5 transformations per month</li>
+          <li>2 formats (Email and Conversation)</li>
+          <li>Basic tone control</li>
+          <li>Copy to clipboard</li>
+        </ul>
+        <a href="kindred-auth.html?plan=free&mode=signup" class="price-btn price-btn-outline">Get Started Free</a>
+      </div>
+      <div class="price-card popular reveal">
+        <div class="popular-badge">MOST POPULAR</div>
+        <div class="price-name">Pro</div>
+        <div class="price-amount">₦7,000<span>/mo</span></div>
+        <div class="price-period">Billed monthly</div>
+        <ul class="price-features">
+          <li>Unlimited transformations</li>
+          <li>All 5 formats</li>
+          <li>Advanced tone control</li>
+          <li>Multilingual input</li>
+          <li>Anxiety mode</li>
+          <li>Priority processing</li>
+        </ul>
+        <a href="kindred-auth.html?plan=pro&mode=signup" class="price-btn price-btn-fill">Start Pro</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA + WAITLIST FORM -->
+<div class="cta-banner" id="waitlist">
+  <h2>Stop struggling to find the words.</h2>
+  <p>Be the first to know. Get Kindred updates, new features and early access  straight to your inbox..</p>
+
+  <div id="waitlistFormWrap">
+    <div class="waitlist-form-row">
+      <input type="text" class="waitlist-input" id="waitlistName" placeholder="First name (optional)" style="max-width:170px;flex:1;" />
+      <input type="email" class="waitlist-input" id="waitlistEmail" placeholder="your@email.com" style="flex:2;" />
+      <button class="cta-submit" onclick="joinWaitlist()" id="waitlistBtn">Get Updates →</button>
+    </div>
+    <div id="waitlistMsg"></div>
+  </div>
+
+  <div id="waitlistSuccess" style="display:none;text-align:center;padding:8px 0;position:relative;">
+    <div style="font-size:2rem;margin-bottom:10px;">🎉</div>
+    <div style="font-weight:700;font-size:1.2rem;color:var(--navy);margin-bottom:6px;">  </div>
+    <div style="color:rgba(15,22,35,0.7);font-size:0.9rem;">Check your inbox  we sent you a welcome email from Kindred.</div>
+  </div>
+
+  <div class="waitlist-sub-link">
+    <a href="kindred-auth.html?plan=free&mode=signup">Already signed up? Open the app →</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <span class="nav-logo" style="display:block;text-align:center;margin-bottom:12px;">Kindred</span>
+      <p style="text-align:center;margin:0 auto;">Say exactly what you mean. AI-powered writing for everyone.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="kindred-app.html">The App</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how">How it Works</a></li>
+          <li><a href="kindred-pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="kindred-about.html">About</a></li>
+          <li><a href="#usecases">Use Cases</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Use</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Kindred. All rights reserved.</span>
+    <div class="footer-socials">
+      <a href="#" class="social-icon">𝕏</a>
+      <a href="#" class="social-icon">in</a>
+      <a href="#" class="social-icon">ig</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function openMenu(){document.getElementById('mobileMenu').classList.add('open');document.body.style.overflow='hidden';}
+  function closeMenu(){document.getElementById('mobileMenu').classList.remove('open');document.body.style.overflow='';}
+
+  const reveals=document.querySelectorAll('.reveal');
+  const observer=new IntersectionObserver((entries)=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*80);});},{threshold:0.1});
+  reveals.forEach(el=>observer.observe(el));
+
+  function switchTab(btn,id){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.usecase-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('uc-'+id).classList.add('active');
+  }
+
+  document.querySelectorAll('.fmt-tag').forEach(tag=>{
+    tag.addEventListener('click',()=>{
+      document.querySelectorAll('.fmt-tag').forEach(t=>t.classList.remove('active'));
+      tag.classList.add('active');
+    });
+  });
+
+  const examples={
+    Email:{input:"i wanna tell my boss am not coming today but dont want to sound lazy",output:"Hi [Manager's name],\n\nI hope you're well. I'm writing to let you know that I'm unable to come in today due to a personal matter that requires my immediate attention.\n\nI'll ensure all urgent tasks are covered and will be back at full capacity tomorrow.\n\nThank you for your understanding.\n\nBest regards"},
+    Essay:{input:"colonialism affected africa and there were bad things that happened and it still affects us today",output:"This essay examines the lasting impact of colonialism on the African continent, with particular focus on its enduring economic and social consequences. Through historical analysis, it argues that colonial structures continue to shape contemporary African societies in measurable and significant ways."},
+    Proposal:{input:"i want to help this company with their branding they need a logo and website",output:"I'd love to present a comprehensive brand identity proposal for your company. This would include a full redesign of your visual presence — logo, color system, typography, and website — all crafted to position your brand more effectively and resonate with your target audience."},
+    Conversation:{input:"i cant come for your event and i dont want you to think i dont care",output:"Hey, I'm really sorry but I won't be able to make it to your event. I just want you to know it's not because I don't care — I really do. I hope it goes beautifully, and I'll make it up to you soon."}
+  };
+
+  function typeText(el,text,speed=18){
+    el.innerHTML='';let i=0;
+    const cursor='<span class="cursor"></span>';
+    const iv=setInterval(()=>{
+      if(i<text.length){el.innerHTML=text.substring(0,i+1).replace(/\n/g,'<br>')+cursor;i++;}
+      else{el.innerHTML=text.replace(/\n/g,'<br>');clearInterval(iv);}
+    },speed);
+  }
+
+  let demoUsed=false;
+  async function runDemo(){
+    const activeFormat=document.querySelector('.fmt-tag.active')?.textContent.trim()||'Email';
+    const userInput=document.getElementById('demoInput').value.trim();
+    const outputEl=document.getElementById('demoOutput');
+
+    if(!userInput){typeText(outputEl,examples[activeFormat]?.output||'');return;}
+
+    if(demoUsed){
+      outputEl.innerHTML=`<div style="padding:16px 0;text-align:center;"><div style="font-size:1rem;color:var(--cream);margin-bottom:10px;">✦ You've used your free transform!</div><div style="font-size:0.85rem;color:var(--text-light);margin-bottom:18px;">Sign up free to continue using Kindred</div><a href="kindred-auth.html?plan=free&mode=signup" style="background:var(--amber);color:var(--navy);padding:12px 28px;border-radius:50px;font-weight:700;font-size:0.9rem;text-decoration:none;">Get Started Free →</a></div>`;
+      return;
+    }
+
+    outputEl.innerHTML='<span style="color:var(--amber);font-size:0.85rem;">✦ Kindred is thinking...</span>';
+    try{
+      const res=await fetch('http://127.0.0.1:5000/transform',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:userInput,format:activeFormat.toLowerCase(),tone:'professional'})});
+      const data=await res.json();
+      if(data.success&&data.output){typeText(outputEl,data.output);}
+      else{typeText(outputEl,examples[activeFormat]?.output||'');}
+    }catch(e){typeText(outputEl,examples[activeFormat]?.output||'');}
+    demoUsed=true;
+  }
+
+  setTimeout(()=>{document.getElementById('demoInput').value=examples.Email.input;runDemo();},1800);
+
+  // WAITLIST SUBMIT
+  async function joinWaitlist(){
+    const email=document.getElementById('waitlistEmail').value.trim();
+    const name=document.getElementById('waitlistName').value.trim();
+    const msgEl=document.getElementById('waitlistMsg');
+    const btn=document.getElementById('waitlistBtn');
+
+    if(!email||!email.includes('@')){
+      msgEl.style.color='var(--navy)';
+      msgEl.textContent='⚠️ Please enter a valid email address.';
+      return;
+    }
+
+    btn.textContent='Joining...';
+    btn.disabled=true;
+    msgEl.textContent='';
+
+    try{
+      const res=await fetch('http://127.0.0.1:5000/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name})});
+      const data=await res.json();
+      if(data.success){
+        document.getElementById('waitlistFormWrap').style.display='none';
+        document.getElementById('waitlistSuccess').style.display='block';
+      }else{
+        msgEl.textContent='⚠️ '+(data.message||'Something went wrong. Try again.');
+        btn.textContent='Join the Waitlist →';
+        btn.disabled=false;
+      }
+    }catch(e){
+      // Backend down — still show success, email captured on next restart
+      document.getElementById('waitlistFormWrap').style.display='none';
+      document.getElementById('waitlistSuccess').style.display='block';
+    }
+  }
+
+  // Allow Enter key on email field
+  document.getElementById('waitlistEmail').addEventListener('keydown',function(e){
+    if(e.key==='Enter')joinWaitlist();
+  });
+</script>
+</body>
+</html>

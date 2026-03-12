@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kindred — Pricing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0f1623;--navy-light:#1a2438;--cream:#f7f2e8;--amber:#e8a838;--amber-dark:#c88a20;--amber-glow:rgba(232,168,56,0.15);--text-light:#c8bfad;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy);color:var(--cream);font-family:'DM Sans',sans-serif;}
+  nav{position:fixed;top:0;width:100%;z-index:100;padding:20px 60px;display:flex;align-items:center;justify-content:space-between;background:rgba(15,22,35,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(232,168,56,0.1);}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--amber);text-decoration:none;}
+  .nav-links{display:flex;gap:36px;list-style:none;}
+  .nav-links a{color:var(--text-light);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;}
+  .nav-links a:hover,.nav-links a.active{color:var(--cream);}
+  .nav-cta{background:var(--amber);color:var(--navy);padding:10px 24px;border-radius:50px;font-weight:600;font-size:0.9rem;text-decoration:none;}
+
+  .hero{padding:140px 60px 60px;text-align:center;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(232,168,56,0.07) 0%,transparent 70%);}
+  .section-tag{display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:16px;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,3.8rem);font-weight:900;line-height:1.1;margin-bottom:16px;}
+  .hero h1 em{font-style:italic;color:var(--amber);}
+  .hero p{font-size:1.05rem;color:var(--text-light);max-width:480px;margin:0 auto 0;line-height:1.7;}
+
+  /* CURRENCY TOGGLE */
+  .currency-wrap{display:flex;justify-content:center;margin:36px 0 48px;}
+  .currency-toggle{display:inline-flex;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:4px;}
+  .cur-btn{padding:10px 28px;border-radius:50px;border:none;cursor:pointer;font-weight:600;font-size:0.88rem;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+  .cur-btn.active{background:var(--amber);color:var(--navy);}
+  .cur-btn:not(.active){background:transparent;color:var(--text-light);}
+
+  /* CARDS */
+  .pricing-section{padding:0 60px 80px;}
+  .pricing-inner{max-width:800px;margin:0 auto;}
+  .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:60px;}
+  .price-card{background:var(--navy-light);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px;position:relative;transition:all 0.3s;}
+  .price-card:hover{transform:translateY(-4px);}
+  .price-card.popular{border-color:var(--amber);box-shadow:0 0 50px rgba(232,168,56,0.1);}
+  .popular-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--navy);padding:5px 20px;border-radius:20px;font-size:0.72rem;font-weight:700;letter-spacing:0.5px;white-space:nowrap;}
+  .price-name{font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:20px;}
+  .price-amount{font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--cream);line-height:1;margin-bottom:4px;}
+  .price-amount sup{font-size:1.2rem;vertical-align:super;}
+  .price-amount span{font-size:1rem;color:var(--text-light);font-family:'DM Sans',sans-serif;font-weight:400;}
+  .price-period{font-size:0.82rem;color:var(--text-light);margin-bottom:28px;}
+  .price-divider{height:1px;background:rgba(255,255,255,0.06);margin-bottom:24px;}
+  .price-features{list-style:none;margin-bottom:32px;}
+  .price-features li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;font-size:0.88rem;color:var(--text-light);border-bottom:1px solid rgba(255,255,255,0.04);}
+  .price-features li:last-child{border-bottom:none;}
+  .check{color:var(--amber);font-weight:700;flex-shrink:0;}
+  .cross{color:rgba(200,191,173,0.3);flex-shrink:0;}
+  .price-btn{width:100%;padding:14px;border-radius:50px;font-weight:600;font-size:0.9rem;cursor:pointer;transition:all 0.2s;text-align:center;display:block;border:none;font-family:'DM Sans',sans-serif;}
+  .btn-outline{background:transparent;color:var(--cream);border:1px solid rgba(255,255,255,0.2);}
+  .btn-outline:hover{border-color:var(--amber);color:var(--amber);}
+  .btn-fill{background:var(--amber);color:var(--navy);}
+  .btn-fill:hover{background:var(--amber-dark);}
+
+  /* FAQ */
+  .faq{margin-bottom:80px;}
+  .faq h2{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;margin-bottom:40px;text-align:center;}
+  .faq h2 em{font-style:italic;color:var(--amber);}
+  .faq-item{border-bottom:1px solid rgba(255,255,255,0.07);}
+  .faq-q{padding:20px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:1rem;font-weight:500;color:var(--cream);}
+  .faq-icon{font-size:1.2rem;color:var(--amber);transition:transform 0.3s;flex-shrink:0;}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s;}
+  .faq-a.open{max-height:200px;padding-bottom:20px;}
+  .faq-a p{font-size:0.92rem;color:var(--text-light);line-height:1.7;}
+  .faq-item.open .faq-icon{transform:rotate(45deg);}
+
+  footer{padding:60px 60px 40px;border-top:1px solid rgba(255,255,255,0.06);}
+  .footer-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px;margin-bottom:48px;}
+  .footer-brand p{font-size:0.88rem;color:var(--text-light);max-width:240px;line-height:1.6;margin-top:8px;}
+  .footer-links{display:flex;gap:60px;flex-wrap:wrap;}
+  .footer-col h4{font-size:0.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:16px;}
+  .footer-col ul{list-style:none;}
+  .footer-col li{margin-bottom:10px;}
+  .footer-col a{color:var(--text-light);text-decoration:none;font-size:0.88rem;transition:color 0.2s;}
+  .footer-col a:hover{color:var(--cream);}
+  .footer-bottom{display:flex;justify-content:space-between;padding-top:32px;border-top:1px solid rgba(255,255,255,0.05);flex-wrap:wrap;gap:16px;}
+  .footer-copy{font-size:0.82rem;color:var(--text-light);}
+  .footer-socials{display:flex;gap:12px;}
+  .social-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:var(--text-light);text-decoration:none;font-size:0.8rem;transition:all 0.2s;}
+  .social-icon:hover{border-color:var(--amber);color:var(--amber);}
+
+  @media(max-width:768px){
+    nav{padding:16px 20px;}
+    .nav-links,.nav-cta{display:none;}
+    .hamburger{display:flex;}
+    .hero{padding:110px 24px 40px;}
+    .pricing-section{padding:0 20px 60px;}
+    .pricing-grid{grid-template-columns:1fr;gap:20px;}
+    footer{padding:50px 24px 32px;}
+    .footer-top{flex-direction:column;align-items:center;text-align:center;gap:28px;}
+    .footer-brand p{margin:0 auto;}
+    .footer-links{flex-direction:column;align-items:center;gap:24px;text-align:center;}
+    .footer-bottom{flex-direction:column;align-items:center;justify-content:center;}
+  }
+
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
+  .hamburger span{width:24px;height:2px;background:var(--cream);border-radius:2px;transition:all 0.3s;}
+  .mobile-menu{display:none;position:fixed;top:0;left:0;width:100%;height:100vh;background:var(--navy);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:32px;}
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{color:var(--cream);text-decoration:none;font-size:1.3rem;font-weight:500;}
+  .mobile-menu a:hover{color:var(--amber);}
+  .mobile-close{position:absolute;top:24px;right:24px;font-size:1.5rem;cursor:pointer;color:var(--text-light);background:none;border:none;}
+  .mobile-menu .nav-cta{font-size:1rem;padding:14px 36px;}
+</style>
+</head>
+<body>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="closeMenu()">✕</button>
+  <a href="kindred-app.html" onclick="closeMenu()">Product</a>
+  <a href="kindred-usecases.html" onclick="closeMenu()">Use Cases</a>
+  <a href="kindred-pricing.html" onclick="closeMenu()">Pricing</a>
+  <a href="kindred-about.html" onclick="closeMenu()">About</a>
+  <a href="kindred-auth.html?plan=free&mode=signup" class="nav-cta" onclick="closeMenu()">Try for Free</a>
+</div>
+<nav>
+  <a href="kindred.html" class="nav-logo">Kindred</a>
+  <ul class="nav-links">
+    <li><a href="kindred-app.html">Product</a></li>
+    <li><a href="kindred-usecases.html">Use Cases</a></li>
+    <li><a href="kindred-pricing.html" class="active">Pricing</a></li>
+    <li><a href="kindred-about.html">About</a></li>
+    </ul>
+  <a href="kindred-auth.html?plan=free&mode=signup" class="nav-cta">Try for Free</a>
+  <div class="hamburger" onclick="openMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="hero">
+  <span class="section-tag">Pricing</span>
+  <h1>Simple, <em>honest</em> pricing</h1>
+  <p>Start free. Upgrade when you're ready. No hidden fees, no surprises.</p>
+</div>
+
+<div class="pricing-section">
+  <div class="pricing-inner">
+
+    <div class="currency-wrap">
+      <div class="currency-toggle">
+        <button class="cur-btn active" id="btnNGN" onclick="setCurrency('NGN')">🇳🇬 Pay in Naira (₦)</button>
+        
+      </div>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- FREE -->
+      <div class="price-card">
+        <div class="price-name">Free</div>
+        <div class="price-amount"><sup></sup>0</div>
+        <div class="price-period">Forever free — no card needed</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><span class="check">✓</span> 5 transforms per month</li>
+          <li><span class="check">✓</span> Email, Caption, Conversation formats</li>
+          <li><span class="check">✓</span> Basic tone control</li>
+          <li><span class="check">✓</span> Copy to clipboard</li>
+          <li><span class="cross">✗</span> Voice input 🎙️</li>
+          <li><span class="cross">✗</span> All formats (Essay, Proposal)</li>
+          <li><span class="cross">✗</span> Multilingual input</li>
+          <li><span class="cross">✗</span> Anxiety Mode 🤍</li>
+        </ul>
+        <button class="price-btn btn-outline" onclick="handlePlanClick('free')">Get Started Free</button>
+      </div>
+
+      <!-- PRO -->
+      <div class="price-card popular">
+        <div class="popular-badge">MOST POPULAR</div>
+        <div class="price-name">Pro</div>
+        <div class="price-amount" id="proPrice"><sup>₦</sup>7,000<span>/mo</span></div>
+        <div class="price-period" id="proPeriod">Billed monthly · ~$5</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li><span class="check">✓</span> Unlimited transforms</li>
+          <li><span class="check">✓</span> All 5 formats</li>
+          <li><span class="check">✓</span> Voice input 🎙️</li>
+          <li><span class="check">✓</span> Multilingual input (Yoruba, Pidgin & more)</li>
+          <li><span class="check">✓</span> Anxiety Mode 🤍</li>
+          <li><span class="check">✓</span> Shorter & Longer adjustments</li>
+          <li><span class="check">✓</span> Advanced tone control</li>
+          <li><span class="check">✓</span> Priority processing</li>
+        </ul>
+        <button class="price-btn btn-fill" id="proBtn" onclick="handlePlanClick('pro')">Start Pro →</button>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq">
+      <h2>Frequently asked <em>questions</em></h2>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I cancel anytime? <span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Yes. No contracts, no lock-ins. Cancel anytime and you keep access until the end of your billing period.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Do you store my inputs? <span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>No. Your thoughts are private. We never store your inputs or use them to train our models.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What counts as a transformation? <span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Each time you submit an input and receive an output. Regenerating also counts as one.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I pay in dollars? <span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Yes! Toggle to USD above. We accept both Naira and USD payments securely through Paystack.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Is there a student discount? <span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Yes! Students with a valid .edu email get 50% off Pro. Sign up with your student email to claim it automatically.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="kindred.html" class="nav-logo" style="display:block;margin-bottom:8px;">Kindred</a>
+      <p>Say exactly what you mean. AI-powered writing for everyone.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="kindred-app.html">The App</a></li><li><a href="kindred-usecases.html">Use Cases</a></li><li><a href="kindred-pricing.html">Pricing</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="kindred-about.html">About</a></li><li><a href="#">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Kindred. All rights reserved.</span>
+    <div class="footer-socials"><a href="#" class="social-icon">𝕏</a><a href="#" class="social-icon">in</a><a href="#" class="social-icon">ig</a></div>
+  </div>
+</footer>
+
+<script>
+  let currentCurrency = 'NGN';
+
+  function setCurrency(c) {
+    currentCurrency = c;
+    document.getElementById('btnNGN').className = 'cur-btn' + (c==='NGN'?' active':'');
+    document.getElementById('btnUSD').className = 'cur-btn' + (c==='USD'?' active':'');
+    if (c === 'NGN') {
+      document.getElementById('proPrice').innerHTML = '<sup>₦</sup>7,000<span>/mo</span>';
+      document.getElementById('proPeriod').textContent = 'Billed monthly · ~$5';
+    } else {
+      document.getElementById('proPrice').innerHTML = '<sup>$</sup>5<span>/mo</span>';
+      document.getElementById('proPeriod').textContent = 'Billed monthly · ~₦7,000';
+    }
+  }
+
+  async function handlePlanClick(plan) {
+    const email = localStorage.getItem('kindred_email') || '';
+
+    if (plan === 'free') {
+      window.location.href = email ? 'kindred-app.html' : 'kindred-auth.html?plan=free&mode=signup';
+      return;
+    }
+
+    const btn = document.getElementById('proBtn');
+    btn.textContent = '⏳ Setting up payment...';
+    btn.disabled = true;
+
+    if (!email) {
+      // Not logged in — go to auth first
+      window.location.href = 'kindred-auth.html?plan=' + plan + (currentCurrency === 'USD' ? '-usd' : '');
+      return;
+    }
+
+    // Already logged in — go straight to payment
+    try {
+      localStorage.setItem('pending_plan', plan);
+      localStorage.setItem('pending_email', email);
+
+      const response = await fetch('http://127.0.0.1:5000/pay/naira', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, plan, currency: currentCurrency })
+      });
+      const result = await response.json();
+
+      if (result.success && result.payment_url) {
+        window.location.href = result.payment_url;
+      } else {
+        alert('Payment setup failed: ' + (result.message || result.error || 'Please try again.'));
+        btn.textContent = 'Start Pro →';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      alert('⚠️ Backend not running! Open PowerShell and run: python app.py');
+      btn.textContent = 'Start Pro →';
+      btn.disabled = false;
+    }
+  }
+
+  function toggleFaq(el) {
+    const item = el.parentElement;
+    item.classList.toggle('open');
+    item.querySelector('.faq-a').classList.toggle('open');
+  }
+</script>
+</body>
+</html>

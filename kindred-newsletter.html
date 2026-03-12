@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kindred — Newsletter Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0f1623;--navy-light:#1a2438;--cream:#f7f2e8;--amber:#e8a838;--amber-dark:#c88a20;--text-light:#c8bfad;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy);color:var(--cream);font-family:'DM Sans',sans-serif;min-height:100vh;padding:40px 20px;}
+  .wrap{max-width:800px;margin:0 auto;}
+  .header{text-align:center;margin-bottom:40px;}
+  .logo{font-family:'Playfair Display',serif;font-size:2rem;color:var(--amber);margin-bottom:6px;}
+  .subtitle{color:var(--text-light);font-size:0.9rem;}
+  .lock-screen{background:var(--navy-light);border:1px solid rgba(232,168,56,0.15);border-radius:16px;padding:40px;text-align:center;max-width:400px;margin:0 auto;}
+  .lock-screen h2{font-family:'Playfair Display',serif;color:var(--amber);margin-bottom:20px;}
+  input,textarea{width:100%;background:rgba(15,22,35,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s;}
+  input:focus,textarea:focus{border-color:rgba(232,168,56,0.3);}
+  input::placeholder,textarea::placeholder{color:rgba(200,191,173,0.4);}
+  label{display:block;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:8px;}
+  .field{margin-bottom:20px;}
+  .btn{background:var(--amber);color:var(--navy);border:none;padding:12px 28px;border-radius:50px;font-weight:700;font-size:0.9rem;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+  .btn:hover{background:var(--amber-dark);}
+  .btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--text-light);padding:10px 20px;border-radius:50px;font-size:0.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .btn-outline:hover{border-color:var(--amber);color:var(--amber);}
+  .card{background:var(--navy-light);border:1px solid rgba(232,168,56,0.12);border-radius:16px;padding:28px;margin-bottom:24px;}
+  .card h3{font-family:'Playfair Display',serif;color:var(--amber);font-size:1.2rem;margin-bottom:20px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;}
+  .stat{background:var(--navy-light);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;text-align:center;}
+  .stat-num{font-family:'Playfair Display',serif;font-size:2rem;color:var(--amber);margin-bottom:4px;}
+  .stat-label{font-size:0.78rem;color:var(--text-light);}
+  .sub-list{max-height:280px;overflow-y:auto;margin-top:16px;}
+  .sub-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.86rem;gap:16px;}
+  .sub-email{color:var(--cream);word-break:break-word;}
+  .sub-date{color:var(--text-light);font-size:0.78rem;white-space:nowrap;}
+  .preview-box{background:rgba(15,22,35,0.5);border:1px solid rgba(232,168,56,0.1);border-radius:10px;padding:20px;margin-top:16px;font-size:0.85rem;line-height:1.8;color:var(--text-light);min-height:100px;}
+  .toast{position:fixed;bottom:30px;right:30px;background:var(--amber);color:var(--navy);padding:14px 24px;border-radius:12px;font-weight:600;font-size:0.9rem;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;}
+  .toast.show{opacity:1;}
+  .section-divider{height:1px;background:rgba(255,255,255,0.06);margin:32px 0;}
+  .tip{background:rgba(232,168,56,0.06);border:1px solid rgba(232,168,56,0.12);border-radius:10px;padding:14px 18px;font-size:0.83rem;color:var(--text-light);line-height:1.6;margin-bottom:20px;}
+  .tip strong{color:var(--amber);}
+  @media(max-width:600px){
+    .stats{grid-template-columns:1fr 1fr;}
+    .stat:last-child{grid-column:span 2;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <div class="logo">Kindred</div>
+    <div class="subtitle">Newsletter Dashboard — Private</div>
+  </div>
+
+  <div id="lockScreen" class="lock-screen">
+    <h2>🔒 Admin Access</h2>
+    <p style="color:var(--text-light);font-size:0.88rem;margin-bottom:24px;">This page is only for you. Enter your admin password.</p>
+    <div class="field">
+      <input type="password" id="adminPass" placeholder="Admin password" onkeydown="if(event.key==='Enter')unlock()">
+    </div>
+    <button class="btn" onclick="unlock()">Unlock →</button>
+    <p id="lockError" style="color:#ff8080;font-size:0.82rem;margin-top:12px;display:none;">Wrong password. Try again.</p>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num" id="statTotal">—</div>
+        <div class="stat-label">Total Subscribers</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statThisMonth">—</div>
+        <div class="stat-label">This Month</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statSent">0</div>
+        <div class="stat-label">Emails Sent</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Your Subscribers</h3>
+      <div class="sub-list" id="subList">
+        <div style="color:var(--text-light);font-size:0.85rem;">Loading...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>✦ Send Newsletter</h3>
+      <div class="tip">
+        <strong>Tip:</strong> Write naturally — like you're talking to a friend who loves Kindred.
+        The email uses Kindred's brand colors automatically. You just write the content.
+      </div>
+      <div class="field">
+        <label>Email Subject Line</label>
+        <input type="text" id="emailSubject" placeholder="e.g. Big update: Voice input is here ✦">
+      </div>
+      <div class="field">
+        <label>Main Headline (shows in amber/gold)</label>
+        <input type="text" id="emailHeadline" placeholder="e.g. You can now speak your thoughts into Kindred">
+      </div>
+      <div class="field">
+        <label>Body (you can use &lt;p&gt; and &lt;br&gt; tags for paragraphs)</label>
+        <textarea id="emailBody" rows="8" placeholder="Write your message here...&#10;&#10;E.g.:&#10;&lt;p&gt;We've been building quietly and we're finally ready to show you what's new.&lt;/p&gt;&#10;&lt;p&gt;Voice input is now live for Pro users...&lt;/p&gt;"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="field">
+          <label>Button Text (optional)</label>
+          <input type="text" id="ctaText" placeholder="Try it now →">
+        </div>
+        <div class="field">
+          <label>Button Link (optional)</label>
+          <input type="text" id="ctaLink" placeholder="https://kindred.app">
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+        <button class="btn-outline" onclick="previewEmail()">👁 Preview</button>
+        <button class="btn" onclick="sendNewsletter()">✦ Send to All Subscribers</button>
+      </div>
+      <div id="previewBox" style="display:none;">
+        <div class="section-divider"></div>
+        <label>Preview (how it looks in email)</label>
+        <div id="previewContent" class="preview-box"></div>
+      </div>
+      <div id="sendResult" style="display:none;margin-top:20px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const BACKEND = 'http://127.0.0.1:5000';
+  let adminSecret = '';
+  let subscribers = [];
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  async function unlock() {
+    const pass = document.getElementById('adminPass').value.trim();
+    if (!pass) return;
+
+    document.getElementById('lockError').style.display = 'none';
+
+    try {
+      // Step 1: verify password
+      const verifyRes = await fetch(BACKEND + '/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: pass })
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyData.success) {
+        document.getElementById('lockError').textContent = verifyData.message || 'Wrong password.';
+        document.getElementById('lockError').style.display = 'block';
+        return;
+      }
+
+      // Step 2: load subscribers — FIXED route: /waitlist/list
+      const res = await fetch(BACKEND + '/waitlist/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: pass })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        adminSecret = pass;
+        subscribers = data.subscribers || [];
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadDashboard(subscribers);
+      } else {
+        document.getElementById('lockError').textContent = data.error || data.message || 'Failed to load subscribers.';
+        document.getElementById('lockError').style.display = 'block';
+      }
+    } catch (e) {
+      document.getElementById('lockError').textContent = '⚠️ Cannot reach backend. Make sure python app.py is running.';
+      document.getElementById('lockError').style.display = 'block';
+    }
+  }
+
+  function loadDashboard(subs) {
+    document.getElementById('statTotal').textContent = subs.length;
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    const thisMonthCount = subs.filter(s => s.created_at && s.created_at.startsWith(thisMonth)).length;
+    document.getElementById('statThisMonth').textContent = thisMonthCount;
+
+    const list = document.getElementById('subList');
+    if (!subs.length) {
+      list.innerHTML = '<div style="color:var(--text-light);font-size:0.85rem;padding:12px 0;">No signed-up users yet.</div>';
+      return;
+    }
+    list.innerHTML = subs.map(s => {
+      const date = s.created_at
+        ? new Date(s.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+        : '';
+      return `<div class="sub-item"><span class="sub-email">${s.email || ''}</span><span class="sub-date">${date}</span></div>`;
+    }).join('');
+  }
+
+  function previewEmail() {
+    const headline = document.getElementById('emailHeadline').value || '[Headline]';
+    const body     = document.getElementById('emailBody').value || '';
+    const ctaText  = document.getElementById('ctaText').value;
+    const ctaLink  = document.getElementById('ctaLink').value;
+    const cta = (ctaText && ctaLink)
+      ? `<div style="text-align:center;margin-top:20px;"><a href="${ctaLink}" style="background:#e8a838;color:#0f1623;padding:12px 28px;border-radius:50px;font-weight:700;text-decoration:none;">${ctaText}</a></div>`
+      : '';
+    document.getElementById('previewContent').innerHTML =
+      `<div style="font-family:Georgia,serif;color:#e8a838;font-size:1.2rem;margin-bottom:12px;">${headline}</div>` +
+      `<div style="color:#c8bfad;line-height:1.8;">${body}</div>` + cta;
+    document.getElementById('previewBox').style.display = 'block';
+  }
+
+  async function sendNewsletter() {
+    const subject  = document.getElementById('emailSubject').value.trim();
+    const headline = document.getElementById('emailHeadline').value.trim();
+    const body     = document.getElementById('emailBody').value.trim();
+    const ctaText  = document.getElementById('ctaText').value.trim();
+    const ctaLink  = document.getElementById('ctaLink').value.trim();
+
+    if (!subject || !headline || !body) { showToast('Please fill in subject, headline and body.'); return; }
+    if (!subscribers.length) { showToast('No subscribers found yet.'); return; }
+    if (!confirm(`Send to ${subscribers.length} subscriber(s)? This cannot be undone.`)) return;
+
+    const resultEl = document.getElementById('sendResult');
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div style="color:var(--amber);">⏳ Sending... this may take a moment.</div>';
+
+    try {
+      const res = await fetch(BACKEND + '/newsletter/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: adminSecret, subject, headline, body_html: body, cta_text: ctaText, cta_link: ctaLink })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById('statSent').textContent = data.sent;
+        resultEl.innerHTML = `
+          <div style="background:rgba(232,168,56,0.08);border:1px solid rgba(232,168,56,0.2);border-radius:10px;padding:16px;">
+            <div style="color:var(--amber);font-weight:700;margin-bottom:6px;">✅ Newsletter sent!</div>
+            <div style="color:var(--text-light);font-size:0.85rem;">Sent: ${data.sent} &nbsp;|&nbsp; Failed: ${data.failed} &nbsp;|&nbsp; Total: ${data.total}</div>
+          </div>`;
+      } else {
+        resultEl.innerHTML = `<div style="color:#ff8080;">❌ ${data.message || 'Failed to send'}</div>`;
+      }
+    } catch(e) {
+      resultEl.innerHTML = `<div style="color:#ff8080;">⚠️ Cannot reach backend.</div>`;
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('lockScreen').style.display !== 'none') unlock();
+  });
+</script>
+</body>
+</html>

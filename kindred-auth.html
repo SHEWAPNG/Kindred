@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kindred — Create Your Account</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1623; --navy-light: #1a2438; --cream: #f7f2e8;
+    --amber: #e8a838; --amber-dark: #c88a20; --amber-glow: rgba(232,168,56,0.15);
+    --text-light: #c8bfad;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--navy); color:var(--cream); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; overflow:hidden; }
+
+  .left-panel {
+    width:50%; background:var(--navy-light); display:flex; flex-direction:column;
+    justify-content:space-between; padding:48px; position:relative; overflow:hidden;
+    border-right:1px solid rgba(232,168,56,0.1);
+  }
+  .left-panel::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse 80% 60% at 30% 40%, rgba(232,168,56,0.06) 0%, transparent 70%);
+  }
+  .left-logo { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; color:var(--amber); text-decoration:none; }
+  .left-content { flex:1; display:flex; flex-direction:column; justify-content:center; }
+  .left-content h2 { font-family:'Playfair Display',serif; font-size:clamp(2rem,3.5vw,3rem); font-weight:900; line-height:1.1; color:var(--cream); margin-bottom:20px; }
+  .left-content h2 em { font-style:italic; color:var(--amber); }
+  .left-content p { font-size:1rem; color:var(--text-light); line-height:1.7; max-width:380px; margin-bottom:40px; }
+  .preview-card { background:var(--navy); border:1px solid rgba(232,168,56,0.15); border-radius:16px; padding:24px; max-width:420px; }
+  .preview-label { font-size:0.7rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--amber); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .preview-label::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--amber); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .preview-text { font-size:0.88rem; color:var(--cream); line-height:1.7; transition:opacity 0.4s; }
+  .left-footer { font-size:0.8rem; color:var(--text-light); }
+  .left-footer span { color:var(--amber); }
+
+  .right-panel { width:50%; display:flex; align-items:center; justify-content:center; padding:48px; overflow-y:auto; }
+  .auth-box { width:100%; max-width:440px; animation:fadeUp 0.6s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+  .auth-plan-badge { display:inline-flex; align-items:center; gap:8px; background:var(--amber-glow); border:1px solid rgba(232,168,56,0.3); padding:6px 14px; border-radius:50px; font-size:0.78rem; font-weight:600; color:var(--amber); margin-bottom:20px; }
+  .auth-header h1 { font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:var(--cream); margin-bottom:8px; }
+  .auth-header p { font-size:0.9rem; color:var(--text-light); line-height:1.6; margin-bottom:28px; }
+
+  .auth-tabs { display:flex; background:var(--navy-light); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:4px; margin-bottom:28px; }
+  .auth-tab { flex:1; padding:10px; border:none; background:transparent; color:var(--text-light); font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500; border-radius:8px; cursor:pointer; transition:all 0.2s; }
+  .auth-tab.active { background:var(--amber); color:var(--navy); font-weight:700; }
+
+  .auth-form { display:flex; flex-direction:column; gap:16px; }
+  .form-group { display:flex; flex-direction:column; gap:8px; }
+  .form-label { font-size:0.82rem; font-weight:600; color:var(--text-light); }
+  .form-input { width:100%; background:var(--navy-light); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 18px; color:var(--cream); font-family:'DM Sans',sans-serif; font-size:0.95rem; outline:none; transition:all 0.2s; }
+  .form-input::placeholder { color:rgba(200,191,173,0.3); }
+  .form-input:focus { border-color:rgba(232,168,56,0.4); box-shadow:0 0 0 3px rgba(232,168,56,0.08); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  .submit-btn { width:100%; background:var(--amber); color:var(--navy); border:none; padding:16px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; transition:all 0.25s; margin-top:4px; box-shadow:0 8px 24px rgba(232,168,56,0.25); }
+  .submit-btn:hover { background:var(--amber-dark); transform:translateY(-2px); }
+  .submit-btn:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+
+  .divider { display:flex; align-items:center; gap:16px; margin:4px 0; }
+  .divider::before,.divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.08); }
+  .divider span { font-size:0.78rem; color:var(--text-light); }
+
+  .google-btn { width:100%; background:transparent; border:1px solid rgba(255,255,255,0.1); color:var(--cream); padding:14px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:500; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:10px; }
+  .google-btn:hover { border-color:rgba(232,168,56,0.3); color:var(--amber); }
+
+  .forgot-link { text-align:right; font-size:0.8rem; }
+  .forgot-link a { color:var(--amber); text-decoration:none; }
+
+  .error-msg { background:rgba(255,80,80,0.1); border:1px solid rgba(255,80,80,0.3); color:#ff8080; padding:12px 16px; border-radius:10px; font-size:0.85rem; display:none; margin-bottom:8px; }
+
+  .auth-footer { text-align:center; font-size:0.8rem; color:var(--text-light); margin-top:20px; }
+  .auth-footer a { color:var(--amber); text-decoration:none; font-weight:600; }
+
+  .success-state { display:none; text-align:center; animation:fadeUp 0.5s ease both; }
+  .success-icon { width:72px; height:72px; border-radius:50%; background:var(--amber-glow); border:2px solid var(--amber); display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 24px; }
+  .success-state h2 { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--cream); margin-bottom:12px; }
+  .success-state p { font-size:0.9rem; color:var(--text-light); line-height:1.7; margin-bottom:28px; }
+  .go-btn { display:inline-block; background:var(--amber); color:var(--navy); padding:14px 36px; border-radius:50px; font-weight:700; font-size:0.95rem; text-decoration:none; transition:all 0.2s; }
+  .go-btn:hover { background:var(--amber-dark); transform:translateY(-2px); }
+
+  @media(max-width:768px) {
+    body { flex-direction:column; overflow:auto; }
+    .left-panel { display:none; }
+    .right-panel { width:100%; padding:32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <a href="kindred.html" class="left-logo">Kindred</a>
+  <div class="left-content">
+    <h2>Your words,<br><em>finally right.</em></h2>
+    <p>Join thousands of people who stopped struggling with communication and started saying exactly what they mean.</p>
+    <div class="preview-card">
+      <div class="preview-label">Live example</div>
+      <div class="preview-text" id="previewText">Hi Sarah,<br><br>I hope you're doing well. I wanted to follow up on our conversation regarding the project timeline. Could we schedule a quick call to align on next steps?<br><br>Best regards</div>
+    </div>
+  </div>
+  <div class="left-footer">Trusted by <span>10,000+</span> users across 40 countries</div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="auth-box">
+
+    <!-- AUTH SECTION -->
+    <div id="authSection">
+      <div class="auth-header">
+        <div class="auth-plan-badge" id="planBadge">✦ Free Plan</div>
+        <h1 id="authTitle">Create your account</h1>
+        <p id="authSubtitle">Start transforming your thoughts into clear, professional messages today.</p>
+      </div>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <!-- SIGN UP FORM -->
+      <div id="signupForm">
+        <div class="auth-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" id="firstName" class="form-input" placeholder="Adesewa">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" id="lastName" class="form-input" placeholder="Adeyemi">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="signupEmail" class="form-input" placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="signupPassword" class="form-input" placeholder="Min. 8 characters">
+          </div>
+          <button class="submit-btn" id="signupBtn" onclick="handleSignup()">Create Account →</button>
+          <div class="divider"><span>or continue with</span></div>
+          <button class="google-btn" onclick="handleGoogle()">
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+        </div>
+      </div>
+
+      <!-- LOG IN FORM (hidden by default) -->
+      <div id="loginForm" style="display:none;">
+        <div class="auth-form">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="Your password">
+          </div>
+          <div class="forgot-link"><a href="#">Forgot password?</a></div>
+          <button class="submit-btn" id="loginBtn" onclick="handleLogin()">Log In →</button>
+          <div class="divider"><span>or continue with</span></div>
+          <button class="google-btn" onclick="handleGoogle()">
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+        </div>
+      </div>
+
+      <div class="auth-footer" id="authFooter">
+        Already have an account? <a href="#" onclick="showLogin(); return false;">Log in here</a>
+      </div>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div class="success-state" id="successState">
+      <div class="success-icon">🎉</div>
+      <h2>You're all set!</h2>
+      <p>Your Kindred account is ready. Start transforming your thoughts into perfect messages right now.</p>
+      <a href="kindred-app.html" class="go-btn">Open Kindred →</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ─── SUPABASE
+  const SUPABASE_URL = 'https://zfjadtqjzziqnqqkrekk.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmamFkdHFqenppcW5xcWtyZWtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MjAxOTUsImV4cCI6MjA4ODM5NjE5NX0.ga1GQEq5BO4DRZlNOUY9d7Zsx2bMfzxlxlc0WIvhb_E';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ─── NEVER auto-redirect on this page
+  // User comes here to sign up or log in — let them do that
+  // We only redirect AFTER they successfully submit the form
+
+  // ─── PLAN
+  const params = new URLSearchParams(window.location.search);
+  const plan = params.get('plan') || '';
+  const planNames = {
+    free: 'Free Plan',
+    pro: 'Pro Plan — $5 / ₦7,000/mo',
+    business: 'Business Plan — $25 / ₦35,000/mo',
+    'pro-usd': 'Pro Plan — $5/mo',
+    'business-usd': 'Business Plan — $25/mo'
+  };
+  document.getElementById('planBadge').textContent = plan ? ('✦ ' + (planNames[plan] || 'Free Plan')) : '✦ Welcome back';
+
+  // Auto switch if mode=login in URL
+  const mode = params.get('mode');
+  if (mode === 'login') {
+    showLogin();
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function hideError() {
+    document.getElementById('errorMsg').style.display = 'none';
+  }
+
+  function showSuccess() {
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('successState').style.display = 'block';
+  }
+
+  function showEmailConfirmation(email) {
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('successState').innerHTML =
+      '<div style="text-align:center;padding:20px 0;">' +
+      '<div style="font-size:3rem;margin-bottom:20px;">📧</div>' +
+      '<h2 style="font-family:Playfair Display,serif;font-size:1.8rem;margin-bottom:12px;">Check your email!</h2>' +
+      '<p style="color:var(--text-light);margin-bottom:8px;">We sent a confirmation link to:</p>' +
+      '<p style="color:var(--amber);font-weight:600;margin-bottom:20px;">' + email + '</p>' +
+      '<p style="color:var(--text-light);font-size:0.88rem;margin-bottom:8px;">Click the link in your email to verify your account.</p>' +
+      '<p style="color:var(--text-light);font-size:0.88rem;margin-bottom:28px;">Once verified, <strong style="color:var(--cream);">you will be logged in automatically</strong> — no need to log in again.</p>' +
+      '</div>';
+    document.getElementById('successState').style.display = 'block';
+  }
+
+  // ─── SWITCH TABS
+  function showLogin() {
+    hideError();
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('authTitle').textContent = 'Welcome back';
+    document.getElementById('authSubtitle').textContent = 'Log in to continue with Kindred.';
+    document.getElementById('authFooter').innerHTML = "Don't have an account? <a href=\"#\" onclick=\"showSignup(); return false;\">Sign up free</a>";
+  }
+
+  function showSignup() {
+    hideError();
+    document.getElementById('signupForm').style.display = 'block';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('authTitle').textContent = 'Create your account';
+    document.getElementById('authSubtitle').textContent = 'Start transforming your thoughts into clear, professional messages today.';
+    document.getElementById('authFooter').innerHTML = 'Already have an account? <a href="#" onclick="showLogin(); return false;">Log in here</a>';
+  }
+
+  // Keep switchTab working for any old references
+  function switchTab(tab) {
+    if (tab === 'login') showLogin(); else showSignup();
+  }
+
+  // ─── PAYMENT
+  async function handlePayment(email) {
+    const isUSD = plan.includes('usd');
+    const planBase = plan.replace('-usd', '');
+    const endpoint = isUSD ? '/pay/dollar' : '/pay/naira';
+    try {
+      const response = await fetch('http://127.0.0.1:5000' + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, plan: planBase })
+      });
+      const result = await response.json();
+      if (result.success && result.payment_url) {
+        // Store plan + email so callback page can verify
+        sessionStorage.setItem('pending_plan', planBase);
+        sessionStorage.setItem('pending_email', email);
+        // Redirect to Paystack — they come back to kindred-callback.html
+        window.location.href = result.payment_url;
+      } else {
+        showError('❌ Payment setup failed: ' + (result.error || 'Please try again.'));
+      }
+    } catch (err) {
+      showError('⚠️ Backend not running! Open PowerShell: python app.py — then try again.');
+    }
+    return false; // Never proceed to app without payment
+  }
+
+  // ─── SIGN UP
+  async function handleSignup() {
+    hideError();
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+
+    if (!firstName || !email || !password) { showError('Please fill in all fields!'); return; }
+    if (password.length < 8) { showError('Password must be at least 8 characters!'); return; }
+
+    const btn = document.getElementById('signupBtn');
+    btn.textContent = '⏳ Creating account...';
+    btn.disabled = true;
+
+    // Build redirect URL — after email verification, go straight to app
+    const redirectTo = window.location.origin + '/kindred-app.html';
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { first_name: firstName, last_name: lastName },
+        emailRedirectTo: redirectTo
+      }
+    });
+
+    if (error) {
+      showError(error.message);
+      btn.textContent = 'Create Account →';
+      btn.disabled = false;
+      return;
+    }
+
+    // Check if email confirmation is needed
+    if (data.user && data.session === null) {
+      // Supabase requires email confirmation
+      localStorage.setItem('kindred_plan', plan || 'free');
+      localStorage.setItem('kindred_email', email);
+      showEmailConfirmation(email);
+      return;
+    }
+
+    if (plan === 'free' || !plan) {
+      localStorage.setItem('kindred_plan', 'free');
+      localStorage.setItem('kindred_email', email);
+      showSuccess();
+      return;
+    }
+
+    // Paid plan — must pay before accessing app
+    btn.textContent = '⏳ Setting up payment...';
+    await handlePayment(email);
+    // If we reach here, payment redirect failed — reset button
+    btn.textContent = 'Create Account →';
+    btn.disabled = false;
+  }
+
+  // ─── LOG IN
+  async function handleLogin() {
+    hideError();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) { showError('Please fill in all fields!'); return; }
+
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = '⏳ Logging in...';
+    btn.disabled = true;
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      showError(error.message);
+      btn.textContent = 'Log In →';
+      btn.disabled = false;
+      return;
+    }
+
+    // If coming from a paid plan page → go to payment
+    if (plan === 'pro' || plan === 'business' || plan === 'pro-usd' || plan === 'business-usd') {
+      btn.textContent = '⏳ Setting up payment...';
+      await handlePayment(email);
+      btn.textContent = 'Log In →';
+      btn.disabled = false;
+      return;
+    }
+
+    // Free plan → straight to app
+    if (plan === 'free') {
+      localStorage.setItem('kindred_plan', 'free');
+      localStorage.setItem('kindred_email', email);
+      window.location.href = 'kindred-app.html';
+      return;
+    }
+
+    // No plan in URL (direct login) → check if they already paid
+    btn.textContent = '⏳ Checking account...';
+    try {
+      const res = await fetch('http://127.0.0.1:5000/check-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const sub = await res.json();
+
+      if (sub.has_subscription) {
+        // They paid before → save plan and let them in
+        localStorage.setItem('kindred_plan', sub.plan || 'pro');
+        localStorage.setItem('kindred_email', email);
+        window.location.href = 'kindred-app.html';
+      } else {
+        // Never paid → send to pricing
+        window.location.href = 'kindred-pricing.html';
+      }
+    } catch(e) {
+      // Backend down — send to pricing to be safe
+      window.location.href = 'kindred-pricing.html';
+    }
+  }
+
+  // ─── GOOGLE
+  async function handleGoogle() {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/kindred-app.html' }
+    });
+    if (error) showError(error.message);
+  }
+
+  // ─── PREVIEW CYCLE
+  const messages = [
+    "Hi Sarah,<br><br>I hope you're doing well. I wanted to follow up on our conversation regarding the project timeline.<br><br>Best regards",
+    "Dear Sir/Ma,<br><br>I am writing to express my interest in the position advertised. I believe my skills align well with your requirements.<br><br>Yours sincerely",
+    "Hey! Just wanted to check in — I've been thinking about what you said and I completely understand. Let's talk soon. 🤍"
+  ];
+  let msgIndex = 0;
+  setInterval(() => {
+    msgIndex = (msgIndex + 1) % messages.length;
+    const el = document.getElementById('previewText');
+    el.style.opacity = '0';
+    setTimeout(() => { el.innerHTML = messages[msgIndex]; el.style.opacity = '1'; el.style.transition = 'opacity 0.5s'; }, 300);
+  }, 4000);
+</script>
+</body>
+</html>

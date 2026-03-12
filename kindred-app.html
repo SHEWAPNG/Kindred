@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kindred — The App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--navy:#0f1623;--navy-light:#1a2438;--cream:#f7f2e8;--amber:#e8a838;--amber-dark:#c88a20;--amber-glow:rgba(232,168,56,0.15);--text-light:#c8bfad;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy);color:var(--cream);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+  nav{position:fixed;top:0;width:100%;z-index:200;padding:16px 60px;display:flex;align-items:center;justify-content:space-between;background:rgba(15,22,35,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(232,168,56,0.1);}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--amber);text-decoration:none;}
+  .nav-links{display:flex;gap:32px;list-style:none;}
+  .nav-links a{color:var(--text-light);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;}
+  .nav-links a:hover,.nav-links a.active{color:var(--cream);}
+  .nav-cta{background:var(--amber);color:var(--navy);padding:10px 24px;border-radius:50px;font-weight:600;font-size:0.9rem;text-decoration:none;}
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
+  .hamburger span{width:24px;height:2px;background:var(--cream);border-radius:2px;transition:all 0.3s;}
+  .mobile-menu{display:none;position:fixed;top:0;left:0;width:100%;height:100vh;background:var(--navy);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:32px;}
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{color:var(--cream);text-decoration:none;font-size:1.3rem;font-weight:500;}
+  .mobile-menu .close-btn{position:absolute;top:24px;right:24px;font-size:1.5rem;cursor:pointer;color:var(--text-light);}
+  .mobile-menu .nav-cta{font-size:1rem;padding:14px 36px;}
+  .hero{padding:120px 60px 50px;text-align:center;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(232,168,56,0.07) 0%,transparent 70%);}
+  .section-tag{display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:12px;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:16px;}
+  .hero h1 em{font-style:italic;color:var(--amber);}
+  .hero p{font-size:1rem;color:var(--text-light);max-width:480px;margin:0 auto;line-height:1.7;}
+  .app-wrapper{max-width:1100px;margin:0 auto;padding:24px 60px 80px;}
+  .app-ui{background:var(--navy-light);border-radius:20px;border:1px solid rgba(232,168,56,0.15);overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.4);}
+  .app-topbar{background:rgba(15,22,35,0.8);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .app-dots{display:flex;gap:7px;}
+  .dot{width:12px;height:12px;border-radius:50%;}
+  .dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+  .app-title{font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--amber);}
+  .plan-area{display:flex;align-items:center;gap:10px;}
+  #planDisplay{font-size:0.78rem;color:var(--text-light);}
+  .upgrade-banner{background:linear-gradient(90deg,rgba(232,168,56,0.1),rgba(232,168,56,0.05));border-bottom:1px solid rgba(232,168,56,0.15);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .upgrade-banner span{font-size:0.85rem;color:var(--text-light);}
+  .upgrade-banner a{background:var(--amber);color:var(--navy);padding:7px 20px;border-radius:50px;font-weight:700;font-size:0.82rem;text-decoration:none;white-space:nowrap;}
+  .app-body{display:grid;grid-template-columns:200px 1fr 1fr;min-height:480px;}
+  .app-sidebar{background:rgba(15,22,35,0.6);border-right:1px solid rgba(255,255,255,0.06);padding:20px 14px;}
+  .sidebar-section{margin-bottom:24px;}
+  .sidebar-label{font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:10px;padding:0 8px;}
+  .sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:0.86rem;color:var(--text-light);margin-bottom:3px;position:relative;}
+  .sidebar-item:hover{background:rgba(232,168,56,0.08);color:var(--cream);}
+  .sidebar-item.active{background:var(--amber-glow);color:var(--amber);border:1px solid rgba(232,168,56,0.2);}
+  .sidebar-item.locked{opacity:0.5;}
+  .sidebar-item .lock-icon{margin-left:auto;font-size:0.7rem;color:var(--amber);}
+  .tone-pill{display:inline-block;padding:5px 12px;border-radius:20px;font-size:0.74rem;font-weight:500;border:1px solid rgba(255,255,255,0.1);color:var(--text-light);cursor:pointer;margin:3px;transition:all 0.2s;}
+  .tone-pill:hover,.tone-pill.active{background:var(--amber-glow);border-color:rgba(232,168,56,0.3);color:var(--amber);}
+  .app-input{padding:24px;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;}
+  .panel-label{font-size:0.7rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .dot-indicator{width:6px;height:6px;border-radius:50%;background:var(--text-light);flex-shrink:0;}
+  .app-textarea{flex:1;background:rgba(15,22,35,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:0.92rem;line-height:1.7;resize:none;outline:none;transition:border-color 0.2s;min-height:260px;}
+  .app-textarea:focus{border-color:rgba(232,168,56,0.25);}
+  .app-textarea::placeholder{color:rgba(200,191,173,0.3);}
+  .input-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:8px;}
+  .char-count{font-size:0.76rem;color:var(--text-light);flex-shrink:0;}
+  .input-actions{display:flex;align-items:center;gap:8px;}
+  .voice-btn{background:rgba(232,168,56,0.1);border:1px solid rgba(232,168,56,0.3);color:var(--amber);width:38px;height:38px;border-radius:50%;font-size:1rem;cursor:pointer;flex-shrink:0;}
+  .transform-btn{background:var(--amber);color:var(--navy);border:none;padding:10px 24px;border-radius:50px;font-weight:700;font-size:0.88rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .transform-btn:hover{transform:scale(1.04);background:var(--amber-dark);}
+  .app-output{padding:24px;display:flex;flex-direction:column;}
+  .output-text{flex:1;font-size:0.92rem;line-height:1.8;color:var(--cream);min-height:260px;}
+  .thinking{display:flex;align-items:center;gap:8px;color:var(--amber);font-size:0.86rem;}
+  .thinking-dots{display:flex;gap:4px;}
+  .thinking-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:bounce 1.2s infinite;}
+  .thinking-dot:nth-child(2){animation-delay:0.2s;}.thinking-dot:nth-child(3){animation-delay:0.4s;}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .output-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap;gap:8px;}
+  .copy-btn{background:transparent;border:1px solid rgba(232,168,56,0.3);color:var(--amber);padding:9px 20px;border-radius:50px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .copy-btn:hover{background:var(--amber);color:var(--navy);}
+  .output-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .action-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--text-light);padding:7px 12px;border-radius:50px;font-size:0.76rem;cursor:pointer;transition:all 0.2s;}
+  .action-btn:hover{border-color:rgba(232,168,56,0.2);color:var(--amber);}
+  .cursor{display:inline-block;width:2px;height:1em;background:var(--amber);margin-left:2px;animation:blink 1s infinite;vertical-align:text-bottom;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  .mobile-formats{display:none;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.06);overflow-x:auto;gap:8px;white-space:nowrap;}
+  .format-pill{display:inline-block;padding:7px 16px;border-radius:50px;font-size:0.82rem;font-weight:500;border:1px solid rgba(255,255,255,0.1);color:var(--text-light);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .format-pill.active{background:var(--amber-glow);border-color:rgba(232,168,56,0.3);color:var(--amber);}
+  .format-pill.locked{opacity:0.5;}
+  .features-section{padding:60px 60px;max-width:1100px;margin:0 auto;}
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;}
+  .feat{background:var(--navy-light);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;transition:all 0.3s;}
+  .feat:hover{transform:translateY(-4px);border-color:rgba(232,168,56,0.2);}
+  .feat-icon{font-size:1.5rem;margin-bottom:12px;}
+  .feat h3{font-size:0.95rem;font-weight:600;margin-bottom:8px;}
+  .feat p{font-size:0.84rem;color:var(--text-light);line-height:1.6;}
+  .cta-strip{margin:0 60px 80px;background:linear-gradient(135deg,var(--amber),var(--amber-dark));border-radius:20px;padding:50px;text-align:center;}
+  .cta-strip h2{font-family:'Playfair Display',serif;font-size:2rem;color:var(--navy);margin-bottom:10px;}
+  .cta-strip p{color:rgba(15,22,35,0.7);margin-bottom:28px;}
+  .cta-strip a{background:var(--navy);color:var(--cream);padding:12px 32px;border-radius:50px;font-weight:700;text-decoration:none;}
+  footer{padding:60px 60px 40px;border-top:1px solid rgba(255,255,255,0.06);}
+  .footer-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px;margin-bottom:48px;}
+  .footer-brand{text-align:center;}
+  .footer-brand p{font-size:0.86rem;color:var(--text-light);max-width:240px;line-height:1.6;margin-top:8px;}
+  .footer-links{display:flex;gap:60px;flex-wrap:wrap;}
+  .footer-col h4{font-size:0.76rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:14px;}
+  .footer-col ul{list-style:none;}
+  .footer-col li{margin-bottom:10px;}
+  .footer-col a{color:var(--text-light);text-decoration:none;font-size:0.86rem;transition:color 0.2s;}
+  .footer-col a:hover{color:var(--cream);}
+  .footer-bottom{display:flex;justify-content:center;padding-top:28px;border-top:1px solid rgba(255,255,255,0.05);flex-wrap:wrap;gap:16px;text-align:center;}
+  .footer-copy{font-size:0.8rem;color:var(--text-light);}
+  .footer-socials{display:flex;gap:10px;justify-content:center;}
+  .social-icon{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:var(--text-light);text-decoration:none;font-size:0.8rem;transition:all 0.2s;}
+  .social-icon:hover{border-color:var(--amber);color:var(--amber);}
+  @media(max-width:768px){
+    nav{padding:14px 20px;}
+    .nav-links,.nav-cta{display:none;}
+    .hamburger{display:flex;}
+    .hero{padding:90px 20px 30px;}
+    .app-wrapper{padding:16px 12px 60px;}
+    .app-ui{border-radius:14px;}
+    .app-topbar{padding:12px 16px;}
+    .app-body{grid-template-columns:1fr;min-height:auto;}
+    .app-sidebar{display:none;}
+    .mobile-formats{display:flex;}
+    .app-input{padding:16px;border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}
+    .app-textarea{min-height:180px;}
+    .app-output{padding:16px;}
+    .output-text{min-height:180px;}
+    .features-section{padding:40px 20px;}
+    .features-grid{grid-template-columns:1fr;gap:14px;}
+    .cta-strip{margin:0 16px 60px;padding:36px 20px;}
+    .cta-strip h2{font-size:1.6rem;}
+    footer{padding:40px 20px 32px;}
+    .footer-top{flex-direction:column;align-items:center;text-align:center;gap:32px;}
+    .footer-brand p{margin:8px auto 0;}
+    .footer-links{flex-direction:column;align-items:center;gap:28px;text-align:center;}
+    .footer-bottom{flex-direction:column;align-items:center;}
+    .upgrade-banner{padding:10px 16px;}
+    .upgrade-banner span{font-size:0.8rem;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="kindred.html" class="nav-logo">Kindred</a>
+  <ul class="nav-links">
+    <li><a href="kindred-app.html" class="active">Product</a></li>
+    <li><a href="kindred-usecases.html">Use Cases</a></li>
+    <li><a href="kindred-pricing.html">Pricing</a></li>
+    <li><a href="kindred-about.html">About</a></li>
+  </ul>
+  <a href="kindred-pricing.html" class="nav-cta">Upgrade Plan</a>
+  <div class="hamburger" onclick="openMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <span class="close-btn" onclick="closeMenu()">✕</span>
+  <a href="kindred-app.html" onclick="closeMenu()">Product</a>
+  <a href="kindred-usecases.html" onclick="closeMenu()">Use Cases</a>
+  <a href="kindred-pricing.html" onclick="closeMenu()">Pricing</a>
+  <a href="kindred-about.html" onclick="closeMenu()">About</a>
+  <a href="kindred-pricing.html" class="nav-cta" onclick="closeMenu()">Upgrade Plan</a>
+</div>
+
+<div class="hero">
+  <span class="section-tag">The Product</span>
+  <h1>Your thoughts. <em>Perfectly said.</em></h1>
+  <p>Type anything — messy, broken, unfiltered. Kindred transforms it instantly.</p>
+</div>
+
+<div class="app-wrapper">
+  <div class="app-ui">
+
+    <div class="app-topbar">
+      <div class="app-dots">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+      </div>
+      <div class="app-title">Kindred — Transform</div>
+      <div class="plan-area">
+        <span id="planDisplay">Checking...</span>
+      </div>
+    </div>
+
+    <div class="upgrade-banner" id="upgradeBanner" style="display:none;">
+      <span>You're on <strong style="color:var(--cream);">Free Plan</strong> — 5 transforms/month · Email & Conversation only</span>
+      <a href="kindred-pricing.html">Upgrade to Pro →</a>
+    </div>
+
+    <div class="mobile-formats" id="mobileFmts">
+      <span class="format-pill active" onclick="setFormatMobile(this,'email')">✉️ Email</span>
+      <span class="format-pill" onclick="setFormatMobile(this,'conversation')">💬 Conversation</span>
+      <span class="format-pill locked" onclick="proFormatClick('Essay')">📝 Essay 🔒</span>
+      <span class="format-pill locked" onclick="proFormatClick('Caption')">📸 Caption 🔒</span>
+      <span class="format-pill locked" onclick="proFormatClick('Proposal')">💼 Proposal 🔒</span>
+    </div>
+
+    <div class="app-body">
+
+      <div class="app-sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-label">Format</div>
+          <div class="sidebar-item active" id="fmt-email" onclick="setFormat(this,'email')"><span>✉️</span> Email</div>
+          <div class="sidebar-item" id="fmt-conversation" onclick="setFormat(this,'conversation')"><span>💬</span> Conversation</div>
+          <div class="sidebar-item locked" id="fmt-essay" onclick="proFormatClick('Essay')"><span>📝</span> Essay <span class="lock-icon">🔒</span></div>
+          <div class="sidebar-item locked" id="fmt-caption" onclick="proFormatClick('Caption')"><span>📸</span> Caption <span class="lock-icon">🔒</span></div>
+          <div class="sidebar-item locked" id="fmt-proposal" onclick="proFormatClick('Proposal')"><span>💼</span> Proposal <span class="lock-icon">🔒</span></div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-label">Tone</div>
+          <span class="tone-pill active" onclick="setTone(this)">Professional</span>
+          <span class="tone-pill" onclick="setTone(this)">Casual</span>
+          <span class="tone-pill" onclick="setTone(this)">Formal</span>
+          <span class="tone-pill" onclick="setTone(this)">Empathetic</span>
+          <span class="tone-pill" onclick="setTone(this)">Anxiety Mode 🤍</span>
+        </div>
+      </div>
+
+      <div class="app-input">
+        <div class="panel-label"><span class="dot-indicator"></span> Your raw thoughts</div>
+        <textarea class="app-textarea" id="appInput" placeholder="Just type anything... e.g. 'i wanna ask my client for payment but dont want to seem desperate'" maxlength="1000"></textarea>
+        <div class="input-footer">
+          <span class="char-count" id="charCount">0 / 1000</span>
+          <div class="input-actions">
+            <button class="voice-btn" id="voiceBtn" onclick="handleVoiceClick()" title="Voice input — Pro only">🎙️</button>
+            <button class="transform-btn" onclick="transformText()">✦ Transform</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-output">
+        <div class="panel-label" style="color:var(--amber)"><span class="dot-indicator" style="background:var(--amber)"></span> Kindred output</div>
+        <div class="output-text" id="appOutput">Your polished message will appear here.<span class="cursor"></span></div>
+        <div class="output-footer">
+          <div class="output-actions">
+            <button class="action-btn" onclick="regenerate()">↺ Regenerate</button>
+            <button class="action-btn" id="shorterBtn" onclick="adjustLength('shorter')">✦ Shorter 🔒</button>
+            <button class="action-btn" onclick="adjustLength('longer')">✦ Longer</button>
+          </div>
+          <button class="copy-btn" onclick="copyOutput()">📋 Copy</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="features-section">
+  <span class="section-tag">Why Kindred works</span>
+  <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:700;margin-bottom:8px;">Built for <em style="color:var(--amber);font-style:italic;">real humans</em></h2>
+  <div class="features-grid">
+    <div class="feat"><div class="feat-icon">🧠</div><h3>Understands intent, not just words</h3><p>Kindred reads between the lines — even when you can't find the words.</p></div>
+    <div class="feat"><div class="feat-icon">⚡</div><h3>Results in under 3 seconds</h3><p>No waiting. Your transformed message is ready before you finish your coffee.</p></div>
+    <div class="feat"><div class="feat-icon">🌍</div><h3>Works in any language</h3><p>Type in Yoruba, Pidgin, Igbo, French — Kindred outputs in perfect English.</p></div>
+    <div class="feat"><div class="feat-icon">🎯</div><h3>Format-aware outputs</h3><p>An essay reads differently from a caption. Kindred knows exactly how to structure each.</p></div>
+    <div class="feat"><div class="feat-icon">🔒</div><h3>Private and secure</h3><p>Your thoughts are yours. We never store or use your inputs for training.</p></div>
+    <div class="feat"><div class="feat-icon">📱</div><h3>Works everywhere</h3><p>Browser or mobile. Use Kindred wherever you communicate.</p></div>
+  </div>
+</div>
+
+<div class="cta-strip">
+  <h2>Ready to say exactly what you mean?</h2>
+  <p>Join people who communicate with confidence every day.</p>
+  <a href="kindred-pricing.html">Upgrade to Pro →</a>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="kindred.html" class="nav-logo" style="display:block;margin-bottom:8px;text-align:center;">Kindred</a>
+      <p>Say exactly what you mean. AI-powered writing for everyone.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="kindred-app.html">The App</a></li><li><a href="kindred-usecases.html">Use Cases</a></li><li><a href="kindred-pricing.html">Pricing</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="kindred-about.html">About</a></li><li><a href="#">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Kindred. All rights reserved.</span>
+    <div class="footer-socials">
+      <a href="#" class="social-icon">𝕏</a>
+      <a href="#" class="social-icon">in</a>
+      <a href="#" class="social-icon">ig</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const SUPABASE_URL  = 'https://zfjadtqjzziqnqqkrekk.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmamFkdHFqenppcW5xcWtyZWtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MjAxOTUsImV4cCI6MjA4ODM5NjE5NX0.ga1GQEq5BO4DRZlNOUY9d7Zsx2bMfzxlxlc0WIvhb_E';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // CRITICAL: wipe any stale plan — backend is ONLY source of truth
+  localStorage.removeItem('kindred_plan');
+  localStorage.removeItem('pending_plan');
+  sessionStorage.removeItem('pending_plan');
+
+  let storedEmail   = localStorage.getItem('kindred_email') || '';
+  let storedPlan    = 'free';
+  let isPaid        = false;
+  let currentFormat = 'email';
+  const FREE_LIMIT   = 5;
+  const FREE_FORMATS = ['email', 'conversation'];
+
+  // Detect Yoruba, Pidgin, Igbo, Hausa, French — Pro only
+  const MULTILINGUAL_PATTERNS = [
+    /\b(mo fe|e joo|e jo|jowo|bawo ni|ese|eku|nibo|kilode|eyin|emi|jẹ|pẹlu|lati|naa)\b/i,
+    /\b(dey|nau|abi|wetin|wahala|abeg|oga|sabi|wey|no be|e be like|chop|pikin|bros|ehen|sha|sef|walahi|jare)\b/i,
+    /\b(biko|daalu|kedu|nna|nne|anyi|ulo|oge)\b/i,
+    /\b(yauwa|sannu|nagode|don allah)\b/i,
+    /\b(bonjour|merci|s'il vous|je suis|comment|pourquoi)\b/i,
+  ];
+
+  function isMultilingual(text) {
+    return MULTILINGUAL_PATTERNS.some(p => p.test(text));
+  }
+
+  async function initSession() {
+    if (!storedEmail) {
+      const { data } = await sb.auth.getSession();
+      if (data && data.session && data.session.user) {
+        storedEmail = data.session.user.email;
+        localStorage.setItem('kindred_email', storedEmail);
+      } else {
+        window.location.href = 'kindred-auth.html';
+        return;
+      }
+    }
+
+    // Always check plan from backend — never trust localStorage
+    try {
+      const res  = await fetch('http://127.0.0.1:5000/check-subscription', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: storedEmail })
+      });
+      const data = await res.json();
+      if (data.success && data.has_subscription) {
+        storedPlan = data.plan || 'pro';
+        isPaid     = true;
+      } else {
+        storedPlan = 'free';
+        isPaid     = false;
+      }
+    } catch(e) {
+      // Backend down — always default to free
+      storedPlan = 'free';
+      isPaid     = false;
+    }
+
+    applyPlanUI();
+  }
+
+  function applyPlanUI() {
+    if (isPaid) {
+      document.getElementById('planDisplay').textContent = 'Pro Plan ✦';
+      document.getElementById('upgradeBanner').style.display = 'none';
+
+      // Unlock sidebar formats
+      ['essay','caption','proposal'].forEach(f => {
+        const el = document.getElementById('fmt-' + f);
+        if (el) {
+          el.classList.remove('locked');
+          el.querySelector('.lock-icon')?.remove();
+          el.onclick = function(){ setFormat(this, f); };
+        }
+      });
+
+      // Unlock mobile pills
+      document.querySelectorAll('.format-pill.locked').forEach(p => {
+        const raw = p.textContent.replace('🔒','').replace('📝','').replace('📸','').replace('💼','').trim();
+        const fmt = raw.toLowerCase();
+        p.classList.remove('locked');
+        p.textContent = raw;
+        p.onclick = function(){ setFormatMobile(this, fmt); };
+      });
+
+      // Unlock Shorter button
+      const sBtn = document.getElementById('shorterBtn');
+      if (sBtn) sBtn.innerHTML = '✦ Shorter';
+
+    } else {
+      document.getElementById('upgradeBanner').style.display = 'flex';
+      updateUsageDisplay(getLocalUsageCount());
+    }
+  }
+
+  initSession();
+
+  function getLocalUsageCount() {
+    const key   = 'kindred_usage_' + storedEmail;
+    const month = new Date().toISOString().slice(0,7);
+    try {
+      const data = JSON.parse(localStorage.getItem(key) || '{"count":0,"month":""}');
+      return data.month === month ? data.count : 0;
+    } catch(e) { return 0; }
+  }
+
+  function incrementLocalUsage() {
+    const key   = 'kindred_usage_' + storedEmail;
+    const month = new Date().toISOString().slice(0,7);
+    const count = getLocalUsageCount() + 1;
+    localStorage.setItem(key, JSON.stringify({ count, month }));
+    updateUsageDisplay(count);
+  }
+
+  function updateUsageDisplay(count) {
+    if (isPaid) return;
+    const left = Math.max(0, FREE_LIMIT - count);
+    document.getElementById('planDisplay').textContent = 'Free Plan ✦  (' + left + ' left)';
+  }
+
+  function showUpgradePrompt(msg) {
+    document.getElementById('appOutput').innerHTML =
+      '<div style="text-align:center;padding:32px 16px;">' +
+      '<div style="font-size:2.5rem;margin-bottom:16px;">✦</div>' +
+      '<div style="font-size:1rem;font-weight:600;color:var(--cream);margin-bottom:8px;">' + msg + '</div>' +
+      '<div style="font-size:0.85rem;color:var(--text-light);margin-bottom:24px;">Pro plan — ₦7,000/month or $5/month</div>' +
+      '<a href="kindred-pricing.html" style="background:var(--amber);color:var(--navy);padding:12px 28px;border-radius:50px;font-weight:700;text-decoration:none;font-size:0.9rem;">Upgrade to Pro →</a>' +
+      '</div>';
+  }
+
+  function proFormatClick(name) {
+    if (isPaid) return;
+    showUpgradePrompt('📝 ' + name + ' is a Pro feature. Upgrade to unlock all formats!');
+  }
+
+  function handleVoiceClick() {
+    if (!isPaid) { showUpgradePrompt('🎙️ Voice input is a Pro feature. Upgrade to speak your thoughts!'); return; }
+    toggleVoice();
+  }
+
+  function setFormat(el, fmt) {
+    if (!isPaid && !FREE_FORMATS.includes(fmt)) { proFormatClick(fmt); return; }
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    currentFormat = fmt;
+    document.querySelectorAll('.format-pill').forEach(p => p.classList.remove('active'));
+    const pill = document.querySelector('.format-pill[onclick*="' + fmt + '"]');
+    if (pill) pill.classList.add('active');
+  }
+
+  function setFormatMobile(el, fmt) {
+    if (!isPaid && !FREE_FORMATS.includes(fmt)) { proFormatClick(fmt); return; }
+    document.querySelectorAll('.format-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    currentFormat = fmt;
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    const sid = document.getElementById('fmt-' + fmt);
+    if (sid) sid.classList.add('active');
+  }
+
+  function setTone(el) {
+    document.querySelectorAll('.tone-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function typeText(el, text, speed=14) {
+    el.innerHTML = '';
+    let i = 0;
+    const iv = setInterval(() => {
+      if (i < text.length) {
+        el.innerHTML = text.substring(0,i+1).replace(/\n/g,'<br>') + '<span class="cursor"></span>';
+        i++;
+      } else {
+        el.innerHTML = text.replace(/\n/g,'<br>');
+        clearInterval(iv);
+      }
+    }, speed);
+  }
+
+  async function callAI(text, format, tone, instruction) {
+    const res = await fetch('http://127.0.0.1:5000/transform', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ text, format, tone, instruction: instruction || '', email: storedEmail })
+    });
+    return await res.json();
+  }
+
+  async function transformText() {
+    const out   = document.getElementById('appOutput');
+    const input = document.getElementById('appInput').value.trim();
+    const tone  = document.querySelector('.tone-pill.active')?.textContent || 'Professional';
+
+    if (!input) { out.innerHTML = '<span class="cursor"></span>'; return; }
+
+    // Block multilingual for free users
+    if (!isPaid && isMultilingual(input)) {
+      showUpgradePrompt('🌍 Multilingual input (Yoruba, Pidgin, Igbo & more) is a Pro feature. Upgrade to write in any language!');
+      return;
+    }
+
+    out.innerHTML = '<div class="thinking">✦ Kindred is thinking...<div class="thinking-dots"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div></div></div>';
+
+    try {
+      const data = await callAI(input, currentFormat, tone.toLowerCase(), '');
+      if (data.success) {
+        incrementLocalUsage();
+        typeText(out, data.output);
+      } else if (data.upgrade_required) {
+        showUpgradePrompt(data.error);
+      } else {
+        out.innerHTML = '<div style="color:#ff8080;font-size:0.85rem;padding:12px;">⚠️ ' + (data.error || 'Something went wrong') + '</div>';
+      }
+    } catch (err) {
+      out.innerHTML = '<div style="color:#ff8080;font-size:0.85rem;padding:12px;">⚠️ Cannot reach backend. Make sure <strong>python app.py</strong> is running.</div>';
+    }
+  }
+
+  async function adjustLength(direction) {
+    // Shorter is Pro only
+    if (direction === 'shorter' && !isPaid) {
+      showUpgradePrompt('✦ Shorter is a Pro feature. Upgrade to refine your message!');
+      return;
+    }
+
+    const out  = document.getElementById('appOutput');
+    const text = out.innerText.trim();
+    if (!text || text.includes('appear here') || text.includes('Upgrade to Pro')) return;
+
+    out.innerHTML = '<div class="thinking"> Kindred is adjusting...<div class="thinking-dots"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div></div></div>';
+
+    const instruction = direction === 'shorter'
+      ? 'Make this message shorter and more concise while keeping all key information'
+      : 'Make this message longer and more detailed while keeping the same tone';
+
+    try {
+      const data = await callAI(text, currentFormat, 'professional', instruction);
+      if (data.success) {
+        typeText(out, data.output);
+      } else if (data.upgrade_required) {
+        showUpgradePrompt(data.error);
+      } else {
+        out.innerHTML = '<div style="color:#ff8080;font-size:0.85rem;padding:12px;">⚠️ ' + (data.error || 'Error') + '</div>';
+      }
+    } catch(e) {
+      out.innerHTML = '<div style="color:#ff8080;font-size:0.85rem;padding:12px;">⚠️ Cannot reach backend.</div>';
+    }
+  }
+
+  function regenerate() { transformText(); }
+
+  function copyOutput() {
+    const text = document.getElementById('appOutput').innerText;
+    if (!text || text.includes('appear here')) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = '📋 Copy', 2000);
+    });
+  }
+
+  document.getElementById('appInput').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length + ' / 1000';
+  });
+
+  function openMenu()  { document.getElementById('mobileMenu').classList.add('open');    document.body.style.overflow='hidden'; }
+  function closeMenu() { document.getElementById('mobileMenu').classList.remove('open'); document.body.style.overflow=''; }
+
+  let recognition = null, isRecording = false;
+  function toggleVoice() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { alert('Voice works in Chrome only!'); return; }
+    if (isRecording) { recognition.stop(); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.onstart  = () => { isRecording=true;  document.getElementById('voiceBtn').textContent='⏹️'; document.getElementById('voiceBtn').style.background='rgba(255,80,80,0.2)'; };
+    recognition.onresult = (e) => { let t=''; for(let i=0;i<e.results.length;i++) t+=e.results[i][0].transcript; document.getElementById('appInput').value=t; document.getElementById('charCount').textContent=t.length+' / 1000'; };
+    recognition.onend    = () => { isRecording=false; document.getElementById('voiceBtn').textContent='🎙️'; document.getElementById('voiceBtn').style.background='rgba(232,168,56,0.1)'; };
+    recognition.start();
+  }
+</script>
+</body>
+</html>

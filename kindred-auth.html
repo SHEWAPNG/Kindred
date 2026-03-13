@@ -285,7 +285,7 @@
     const planBase = plan.replace('-usd', '');
     const endpoint = isUSD ? '/pay/dollar' : '/pay/naira';
     try {
-      const response = await fetch('http://127.0.0.1:5000' + endpoint, {
+      const response = await fetch('https://kindred-evk6.onrender.com' + endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, plan: planBase })
@@ -405,7 +405,7 @@
     // No plan in URL (direct login) → check if they already paid
     btn.textContent = '⏳ Checking account...';
     try {
-      const res = await fetch('http://127.0.0.1:5000/check-subscription', {
+      const res = await fetch('https://kindred-evk6.onrender.com/check-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

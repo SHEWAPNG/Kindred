@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxssssssssssxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxs<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -242,7 +242,7 @@
 </nav>
 
 <!-- HERO -->
-<section class="hero">
+<!-- <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-badge"><span class="badge-dot"></span> Your Writing Assistant</div>
   <h1>Say <em>exactly</em><br>what you mean.</h1>
@@ -270,7 +270,7 @@
       <button class="transform-btn" onclick="runDemo()">✦ Transform</button>
     </div>
   </div>
-</section>
+</section> -->
 
 <!-- SOCIAL PROOF -->
 <div class="social-proof">
@@ -452,7 +452,7 @@
     <div class="pricing-grid">
       <div class="price-card reveal">
         <div class="price-name">Free</div>
-        <div class="price-amount">$0</div>
+        <div class="price-amount">₦0</div>
         <div class="price-period">Forever free</div>
         <ul class="price-features">
           <li>5 transformations per month</li>
@@ -513,7 +513,7 @@
       <span class="nav-logo" style="display:block;text-align:center;margin-bottom:12px;">Kindred</span>
       <p style="text-align:center;margin:0 auto;">Say exactly what you mean. AI-powered writing for everyone.</p>
     </div>
-    <div class="footer-links">
+    <!-- <div class="footer-links">
       <div class="footer-col">
         <h4>Product</h4>
         <ul>
@@ -539,7 +539,7 @@
         </ul>
       </div>
     </div>
-  </div>
+  </div> -->
   <div class="footer-bottom">
     <span class="footer-copy">© 2026 Kindred. All rights reserved.</span>
     <div class="footer-socials">
@@ -603,7 +603,7 @@
 
     outputEl.innerHTML='<span style="color:var(--amber);font-size:0.85rem;">✦ Kindred is thinking...</span>';
     try{
-      const res=await fetch('http://127.0.0.1:5000/transform',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:userInput,format:activeFormat.toLowerCase(),tone:'professional'})});
+      const res=await fetch('https://kindred-evk6.onrender.com/transform',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:userInput,format:activeFormat.toLowerCase(),tone:'professional'})});
       const data=await res.json();
       if(data.success&&data.output){typeText(outputEl,data.output);}
       else{typeText(outputEl,examples[activeFormat]?.output||'');}
@@ -631,7 +631,7 @@
     msgEl.textContent='';
 
     try{
-      const res=await fetch('http://127.0.0.1:5000/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name})});
+      const res=await fetch('https://kindred-evk6.onrender.com/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name})});
       const data=await res.json();
       if(data.success){
         document.getElementById('waitlistFormWrap').style.display='none';

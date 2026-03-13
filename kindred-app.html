@@ -330,7 +330,7 @@
 
     // Always check plan from backend — never trust localStorage
     try {
-      const res  = await fetch('http://127.0.0.1:5000/check-subscription', {
+      const res  = await fetch('https://kindred-evk6.onrender.com/check-subscription', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email: storedEmail })
@@ -471,7 +471,7 @@
   }
 
   async function callAI(text, format, tone, instruction) {
-    const res = await fetch('http://127.0.0.1:5000/transform', {
+    const res = await fetch('https://kindred-evk6.onrender.com/transform', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ text, format, tone, instruction: instruction || '', email: storedEmail })

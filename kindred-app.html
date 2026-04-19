@@ -54,20 +54,12 @@
     text-decoration: none;
   }
 
-  /* Hero */
   .hero {
     padding: 160px 5% 100px;
     text-align: center;
   }
 
-  .hero .tag {
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 2px;
-    color: var(--accent);
-    margin-bottom: 1rem;
-  }
-
+  .hero .tag { font-size: 0.85rem; font-weight: 600; letter-spacing: 2px; color: var(--accent); margin-bottom: 1rem; }
   .hero h1 {
     font-family: 'Fraunces', serif;
     font-size: clamp(2.4rem, 6vw, 4rem);
@@ -76,20 +68,8 @@
     margin-bottom: 1rem;
     color: var(--text);
   }
+  .hero h1 em { color: var(--accent); font-style: italic; }
 
-  .hero h1 em {
-    color: var(--accent);
-    font-style: italic;
-  }
-
-  .hero p {
-    font-size: 1.1rem;
-    color: var(--muted);
-    max-width: 580px;
-    margin: 0 auto;
-  }
-
-  /* Main App */
   .app-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -127,7 +107,6 @@
     min-height: 620px;
   }
 
-  /* Sidebar */
   .sidebar {
     background: rgba(255,245,245,0.7);
     padding: 2rem 1.5rem;
@@ -155,22 +134,21 @@
     transition: all 0.3s;
   }
 
-  .sidebar-item:hover {
-    background: rgba(255,138,138,0.1);
+  .sidebar-item:hover { background: rgba(255,138,138,0.1); }
+  .sidebar-item.active { background: rgba(255,138,138,0.15); color: var(--accent); font-weight: 600; }
+
+  .locked { opacity: 0.6; cursor: not-allowed; }
+
+  /* Language Selector */
+  .lang-select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,138,138,0.3);
+    background: white;
+    margin-top: 8px;
   }
 
-  .sidebar-item.active {
-    background: rgba(255,138,138,0.15);
-    color: var(--accent);
-    font-weight: 600;
-  }
-
-  .locked {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  /* Tone Pills */
   .tone-container {
     display: flex;
     flex-wrap: wrap;
@@ -186,17 +164,14 @@
     background: white;
     color: var(--text);
     cursor: pointer;
-    transition: all 0.3s;
   }
 
-  .tone-pill:hover,
   .tone-pill.active {
     background: var(--accent);
     color: white;
     border-color: var(--accent);
   }
 
-  /* Input & Output */
   .input-area, .output-area {
     padding: 2rem;
   }
@@ -213,9 +188,7 @@
     outline: none;
   }
 
-  .textarea:focus {
-    border-color: var(--accent);
-  }
+  .textarea:focus { border-color: var(--accent); }
 
   .output-text {
     min-height: 280px;
@@ -238,9 +211,7 @@
     cursor: pointer;
   }
 
-  .transform-btn:hover {
-    background: #e66a6a;
-  }
+  .transform-btn:hover { background: #e66a6a; }
 
   @media (max-width: 992px) {
     .app-body { grid-template-columns: 1fr; }
@@ -258,7 +229,7 @@
 <div class="hero">
   <span class="tag">THE APP</span>
   <h1>Your thoughts.<br><em>Perfectly said.</em></h1>
-  <p>Type messy, emotional, or in any language.<br>Kindred turns it into clear, confident, human writing.</p>
+  <p>Type messy, emotional, or in any language.<br>Kindred turns it into clear, confident writing — in your preferred language.</p>
 </div>
 
 <div class="app-container">
@@ -275,22 +246,32 @@
       <div class="sidebar">
         <div class="sidebar-label">Format</div>
         
-        <!-- Free Formats -->
+        <!-- Free -->
         <div class="sidebar-item active" onclick="setFormat(this, 'email')">✉️ Email</div>
         <div class="sidebar-item" onclick="setFormat(this, 'conversation')">💬 Conversation</div>
 
-        <!-- Pro Formats -->
+        <!-- Pro -->
         <div class="sidebar-label" style="margin-top:2rem;">Pro Features</div>
         <div class="sidebar-item locked" onclick="proFormatClick(this, 'proposal')">💼 Business Proposal</div>
         <div class="sidebar-item locked" onclick="proFormatClick(this, 'social_media_post')">📱 Social Media Post</div>
         <div class="sidebar-item locked" onclick="proFormatClick(this, 'content_strategy')">📋 Content Strategy</div>
         <div class="sidebar-item locked" onclick="proFormatClick(this, 'essay')">📝 Essay</div>
-        <div class="sidebar-item locked" onclick="proFormatClick(this, 'speech')">🎤 Speech / Talk</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'speech')">🎤 Speech</div>
         <div class="sidebar-item locked" onclick="proFormatClick(this, 'teaching_explanation')">🧠 Teach / Explain</div>
         <div class="sidebar-item locked" onclick="proFormatClick(this, 'product_description')">🛍️ Product Description</div>
         <div class="sidebar-item locked" onclick="proFormatClick(this, 'cover_letter')">📄 Cover Letter</div>
 
-        <div class="sidebar-label" style="margin-top:2.5rem;">Tone</div>
+        <div class="sidebar-label" style="margin-top:2.5rem;">Reply in</div>
+        <select id="outputLanguage" class="lang-select" onchange="updateOutputLang()">
+          <option value="auto">Auto (Same as input)</option>
+          <option value="english">English</option>
+          <option value="yoruba">Yoruba</option>
+          <option value="hausa">Hausa</option>
+          <option value="french">French</option>
+          <option value="pidgin">Pidgin English</option>
+        </select>
+
+        <div class="sidebar-label" style="margin-top:2rem;">Tone</div>
         <div class="tone-container">
           <div class="tone-pill active" onclick="setTone(this)">Professional</div>
           <div class="tone-pill" onclick="setTone(this)">Casual</div>
@@ -303,19 +284,19 @@
       <!-- Input Area -->
       <div class="input-area">
         <textarea id="appInput" class="textarea" 
-          placeholder="Type anything... messy thoughts, Yoruba, Hausa, French, Pidgin, etc."
+          placeholder="Type anything... in English, Yoruba, Hausa, French, or Pidgin"
           maxlength="2000"></textarea>
         
         <div style="margin-top:1.5rem; display:flex; justify-content:space-between; align-items:center;">
           <span id="charCount" style="color:var(--muted);">0 / 2000</span>
-          <button class="transform-btn" onclick="transformText()">✦ Transform with Kindred</button>
+          <button class="transform-btn" onclick="transformText()">✦ Transform</button>
         </div>
       </div>
 
       <!-- Output Area -->
       <div class="output-area">
         <div style="margin-bottom:1rem; color:var(--accent); font-weight:600;">Kindred's Response</div>
-        <div id="appOutput" class="output-text">Your beautifully written version will appear here...</div>
+        <div id="appOutput" class="output-text">Your transformed text will appear here...</div>
       </div>
 
     </div>
@@ -327,11 +308,11 @@
   let storedEmail = localStorage.getItem('kindred_email') || '';
   let isPro = false;
   let currentFormat = 'email';
+  let outputLanguage = 'auto';
 
-  // Initialize session and plan
   async function initSession() {
     if (!storedEmail) {
-      document.getElementById('planDisplay').textContent = 'Not logged in';
+      document.getElementById('planDisplay').textContent = 'Please log in';
       return;
     }
 
@@ -344,7 +325,7 @@
       const data = await res.json();
 
       isPro = data.success && data.has_subscription;
-      document.getElementById('planDisplay').textContent = isPro ? 'Pro Plan ✦' : 'Free Plan (5 transforms left)';
+      document.getElementById('planDisplay').textContent = isPro ? 'Pro Plan ✦' : 'Free Plan (5 left)';
     } catch(e) {
       document.getElementById('planDisplay').textContent = 'Free Plan';
     }
@@ -352,7 +333,7 @@
 
   function setFormat(el, fmt) {
     if (!isPro && !['email', 'conversation'].includes(fmt)) {
-      alert("This format is available in Pro only. Upgrade to unlock more powerful writing tools.");
+      alert("This format is available only in Pro.");
       return;
     }
     document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
@@ -364,7 +345,7 @@
     if (isPro) {
       setFormat(el, fmt);
     } else {
-      alert("This is a Pro feature.\n\nUpgrade to Pro to access Business Proposals, Social Media Posts, Content Strategy, Teaching Explanations and more.");
+      alert("This is a Pro feature.\n\nUpgrade to unlock powerful formats like proposals, content strategy, teaching explanations, and more.");
     }
   }
 
@@ -373,14 +354,18 @@
     el.classList.add('active');
   }
 
+  function updateOutputLang() {
+    outputLanguage = document.getElementById('outputLanguage').value;
+  }
+
   async function transformText() {
     const input = document.getElementById('appInput').value.trim();
     const tone = document.querySelector('.tone-pill.active')?.textContent || 'Professional';
     const out = document.getElementById('appOutput');
 
-    if (!input) return alert("Please type something first.");
+    if (!input) return alert("Please type something.");
 
-    out.textContent = "Kindred is thinking deeply...";
+    out.textContent = "Kindred is thinking...";
 
     try {
       const res = await fetch(`${BACKEND}/transform`, {
@@ -390,7 +375,8 @@
           text: input,
           format: currentFormat,
           tone: tone.toLowerCase(),
-          email: storedEmail
+          email: storedEmail,
+          output_language: outputLanguage   // ← Sending the selected language
         })
       });
 
@@ -404,7 +390,7 @@
         out.textContent = data.error || "Something went wrong";
       }
     } catch (err) {
-      out.textContent = "Cannot connect to Kindred. Please check your internet.";
+      out.textContent = "Cannot connect to Kindred right now. Please try again.";
     }
   }
 
@@ -413,10 +399,7 @@
     document.getElementById('charCount').textContent = this.value.length + ' / 2000';
   });
 
-  // Initialize
-  window.onload = () => {
-    initSession();
-  };
+  window.onload = initSession;
 </script>
 </body>
 </html>

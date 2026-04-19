@@ -274,11 +274,14 @@ def health():
 @app.route('/transform', methods=['POST'])
 def transform():
     data = request.json or {}
-    raw_text = data.get('text', '')
+    raw_text = data.get('text', '').strip()
     format_type = data.get('format', 'email').lower()
     tone = data.get('tone', 'professional')
-    instruction = data.get('instruction', '')
+    instruction = data.get('instruction', '').strip()
     email = data.get('email', '').strip().lower()
+
+    if not raw_text:
+        return jsonify({"success": False, "error": "Text is required"})
 
     if not email:
         return jsonify({"success": False, "error": "Email is required"})
@@ -286,71 +289,90 @@ def transform():
     sub = get_subscription(email)
     is_pro = sub["has_subscription"]
 
-    # Log for debugging
-    print(f"Transform request - Email: {email} | Is Pro: {is_pro} | Format: {format_type} | Has Yoruba: {is_multilingual(raw_text)}")
+    print(f"Transform → Email: {email} | Pro: {is_pro} | Format: {format_type} | Multilingual: {is_multilingual(raw_text)}")
 
-    # PRO USERS HAVE NO RESTRICTIONS
+    # ====================== ACCESS CONTROL ======================
     if is_pro:
-        print(f"✅ Pro user detected - granting full access")
+        # Pro users get everything
+        pass
     else:
-        # Free user restrictions
+        # Free users restrictions
         FREE_FORMATS = ['email', 'conversation']
         if format_type not in FREE_FORMATS:
             return jsonify({"success": False, "upgrade_required": True,
-                            "error": f"{format_type.title()} is a Pro feature."})
+                            "error": f"{format_type.replace('_', ' ').title()} is a Pro feature."})
 
         if not instruction and is_multilingual(raw_text):
             return jsonify({"success": False, "upgrade_required": True,
-                            "error": "Multilingual input (Yoruba, Pidgin, etc.) is a Pro feature."})
+                            "error": "Writing in Yoruba, Hausa, Pidgin or French is a Pro feature."})
 
         usage = get_usage(email)
         if usage >= 5:
             return jsonify({"success": False, "upgrade_required": True,
-                            "error": "You have used all 5 free transforms this month."})
+                            "error": "You have used all 5 free transforms this month. Upgrade to Pro."})
 
-    # Build prompt (same as before)
+    # ====================== FORMAT GUIDES ======================
     format_guides = {
-        "email": "Write a professional email. Include: Subject line, greeting, body paragraphs, sign-off.",
-        "essay": "Write an essay. NO greeting. Start with intro paragraph. Academic prose. No bullet points.",
-        "caption": "Write a social media caption. Hook first. Then story. Then CTA. End with 3-5 hashtags.",
-        "proposal": "Write a business proposal. Sections: Problem, Solution, Value, Next Steps. No greetings.",
-        "conversation": "Write a conversational WhatsApp-style message. Short, warm, human. No formal greetings."
+        "email": "Write a clear, professional email with subject line, greeting, body, and proper sign-off.",
+        "conversation": "Write a natural, warm WhatsApp-style conversation. Short sentences, emojis if appropriate.",
+        "proposal": "Write a professional business proposal. Include: Problem, Solution, Benefits, Next Steps.",
+        "social_media_post": "Write an engaging social media post (Instagram/Twitter/LinkedIn). Strong hook, storytelling, call-to-action, and relevant hashtags.",
+        "content_strategy": "Create a content strategy or plan. Include goals, target audience, topics, tone, and posting schedule.",
+        "essay": "Write a well-structured essay. Clear introduction, body paragraphs with arguments, and conclusion. Academic tone.",
+        "speech": "Write a powerful speech (wedding, motivational, presentation). Emotional, rhythmic, and memorable.",
+        "product_description": "Write persuasive product descriptions that sell. Highlight benefits, not just features.",
+        "cover_letter": "Write a compelling job application cover letter. Show enthusiasm and fit for the role.",
+        "teaching_explanation": "Explain the topic clearly as if teaching a beginner or teenager. Use simple language, examples, and analogies."
     }
 
-    guide = format_guides.get(format_type, "Write clearly and appropriately.")
+    guide = format_guides.get(format_type, "Write clearly, professionally, and naturally.")
 
+    # Build prompt
     if instruction:
-        prompt = f"{instruction}:\n\n{raw_text}\n\nOutput ONLY the adjusted message. No labels or preamble."
+        prompt = f"{instruction}\n\n{raw_text}\n\nOutput ONLY the final result. No explanations."
     else:
-        prompt = f"""You are Kindred, an expert multilingual AI writing assistant.
-The user may write in ANY language including Yoruba and Pidgin. Understand their intent and transform it into polished, natural English.
-FORMAT: {format_type.upper()}
+        prompt = f"""You are Kindred — a premium, empathetic, and culturally intelligent writing assistant.
+You understand Yoruba, Hausa, Pidgin, French, and English perfectly.
+Transform the user's messy, emotional, or multilingual input into polished, natural, and effective writing.
+
+FORMAT: {format_type.replace('_', ' ').upper()}
 TONE: {tone}
-Format instructions:
+GUIDELINES:
 {guide}
-The user wrote:
+
+User input:
 {raw_text}
-Output ONLY the final {format_type}. No labels, no explanation."""
+
+Output ONLY the final written piece. No labels, no explanations, no quotes."""
 
     try:
         res = requests.post(
             "https://api.cohere.com/v2/chat",
             headers={"Authorization": f"Bearer {COHERE_API_KEY}", "Content-Type": "application/json"},
             json={"model": "command-a-03-2025", "messages": [{"role": "user", "content": prompt}]},
-            timeout=30
+            timeout=35
         )
         result = res.json()
-        if 'message' in result:
+
+        if 'message' in result and result['message'].get('content'):
             output = result['message']['content'][0]['text']
+            
             if not is_pro and email:
                 increment_usage(email)
-            return jsonify({"success": True, "output": output, "plan": sub["plan"]})
+
+            return jsonify({
+                "success": True, 
+                "output": output.strip(),
+                "plan": sub["plan"],
+                "is_pro": is_pro
+            })
         else:
-            return jsonify({"success": False, "error": "AI error: " + str(result)})
+            return jsonify({"success": False, "error": "AI failed to generate response"})
+
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
-    
-    
+        print(f"Transform error: {e}")
+        return jsonify({"success": False, "error": "Service temporarily unavailable"})
+
 # ── ENSURE NEW USER IS FREE
 @app.route('/ensure-free-user', methods=['POST'])
 def ensure_free_user():

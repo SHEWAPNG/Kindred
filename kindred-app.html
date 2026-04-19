@@ -45,23 +45,6 @@
     text-decoration: none;
   }
 
-  .nav-links {
-    display: flex;
-    gap: 2rem;
-    list-style: none;
-  }
-
-  .nav-links a {
-    color: var(--text);
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .nav-links a:hover,
-  .nav-links a.active {
-    color: var(--accent);
-  }
-
   .nav-cta {
     background: var(--accent);
     color: white;
@@ -69,20 +52,6 @@
     border-radius: 50px;
     font-weight: 600;
     text-decoration: none;
-  }
-
-  .hamburger {
-    display: none;
-    flex-direction: column;
-    gap: 5px;
-    cursor: pointer;
-  }
-
-  .hamburger span {
-    width: 28px;
-    height: 3px;
-    background: var(--text);
-    border-radius: 3px;
   }
 
   /* Hero */
@@ -152,11 +121,10 @@
     color: var(--accent);
   }
 
-  /* App Body */
   .app-body {
     display: grid;
-    grid-template-columns: 260px 1fr 1fr;
-    min-height: 560px;
+    grid-template-columns: 280px 1fr 1fr;
+    min-height: 620px;
   }
 
   /* Sidebar */
@@ -172,7 +140,7 @@
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--muted);
-    margin-bottom: 1.2rem;
+    margin: 1.8rem 0 1rem 0;
   }
 
   .sidebar-item {
@@ -195,6 +163,11 @@
     background: rgba(255,138,138,0.15);
     color: var(--accent);
     font-weight: 600;
+  }
+
+  .locked {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   /* Tone Pills */
@@ -223,7 +196,7 @@
     border-color: var(--accent);
   }
 
-  /* Input & Output Areas */
+  /* Input & Output */
   .input-area, .output-area {
     padding: 2rem;
   }
@@ -253,7 +226,7 @@
   }
 
   .transform-btn {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     width: 100%;
     background: var(--accent);
     color: white;
@@ -269,24 +242,9 @@
     background: #e66a6a;
   }
 
-  /* Responsive */
   @media (max-width: 992px) {
-    .app-body {
-      grid-template-columns: 1fr;
-    }
-    .sidebar {
-      border-right: none;
-      border-bottom: 1px solid rgba(255,138,138,0.2);
-    }
-  }
-
-  @media (max-width: 768px) {
-    nav { padding: 1rem 5%; }
-    .nav-links { display: none; }
-    .hamburger { display: flex; }
-    .hero { padding: 120px 5% 60px; }
-    .app-container { padding: 1rem 5%; }
-    .input-area, .output-area { padding: 1.5rem; }
+    .app-body { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid rgba(255,138,138,0.2); }
   }
 </style>
 </head>
@@ -294,20 +252,13 @@
 
 <nav>
   <a href="kindred.html" class="nav-logo">Kindred</a>
-  <ul class="nav-links">
-    <li><a href="kindred-app.html" class="active">Product</a></li>
-    <li><a href="kindred-about.html">About</a></li>
-  </ul>
-  <a href="kindred-pricing.html" class="nav-cta">Upgrade Plan</a>
-  <div class="hamburger" onclick="toggleMobileMenu()">
-    <span></span><span></span><span></span>
-  </div>
+  <a href="kindred-pricing.html" class="nav-cta">Upgrade to Pro</a>
 </nav>
 
 <div class="hero">
   <span class="tag">THE APP</span>
   <h1>Your thoughts.<br><em>Perfectly said.</em></h1>
-  <p>Type anything — messy, emotional, or in any language.<br>Kindred turns it into clear, confident words.</p>
+  <p>Type messy, emotional, or in any language.<br>Kindred turns it into clear, confident, human writing.</p>
 </div>
 
 <div class="app-container">
@@ -323,36 +274,48 @@
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="sidebar-label">Format</div>
+        
+        <!-- Free Formats -->
         <div class="sidebar-item active" onclick="setFormat(this, 'email')">✉️ Email</div>
         <div class="sidebar-item" onclick="setFormat(this, 'conversation')">💬 Conversation</div>
-        <div class="sidebar-item locked" onclick="proFormatClick('Essay')">📝 Essay 🔒</div>
-        <div class="sidebar-item locked" onclick="proFormatClick('Caption')">📸 Caption 🔒</div>
-        <div class="sidebar-item locked" onclick="proFormatClick('Proposal')">💼 Proposal 🔒</div>
+
+        <!-- Pro Formats -->
+        <div class="sidebar-label" style="margin-top:2rem;">Pro Features</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'proposal')">💼 Business Proposal</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'social_media_post')">📱 Social Media Post</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'content_strategy')">📋 Content Strategy</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'essay')">📝 Essay</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'speech')">🎤 Speech / Talk</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'teaching_explanation')">🧠 Teach / Explain</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'product_description')">🛍️ Product Description</div>
+        <div class="sidebar-item locked" onclick="proFormatClick(this, 'cover_letter')">📄 Cover Letter</div>
 
         <div class="sidebar-label" style="margin-top:2.5rem;">Tone</div>
         <div class="tone-container">
           <div class="tone-pill active" onclick="setTone(this)">Professional</div>
           <div class="tone-pill" onclick="setTone(this)">Casual</div>
-          <div class="tone-pill" onclick="setTone(this)">Formal</div>
+          <div class="tone-pill" onclick="setTone(this)">Warm</div>
           <div class="tone-pill" onclick="setTone(this)">Empathetic</div>
-          <div class="tone-pill" onclick="setTone(this)">Anxiety Mode</div>
+          <div class="tone-pill" onclick="setTone(this)">Confident</div>
         </div>
       </div>
 
       <!-- Input Area -->
       <div class="input-area">
-        <textarea id="appInput" class="textarea" placeholder="Just type whatever is on your mind... e.g. 'i wanna ask my client for payment but dont want to seem desperate'" maxlength="1000"></textarea>
+        <textarea id="appInput" class="textarea" 
+          placeholder="Type anything... messy thoughts, Yoruba, Hausa, French, Pidgin, etc."
+          maxlength="2000"></textarea>
         
         <div style="margin-top:1.5rem; display:flex; justify-content:space-between; align-items:center;">
-          <span id="charCount" style="color:var(--muted);">0 / 1000</span>
-          <button class="transform-btn" onclick="transformText()">✦ Transform</button>
+          <span id="charCount" style="color:var(--muted);">0 / 2000</span>
+          <button class="transform-btn" onclick="transformText()">✦ Transform with Kindred</button>
         </div>
       </div>
 
       <!-- Output Area -->
       <div class="output-area">
         <div style="margin-bottom:1rem; color:var(--accent); font-weight:600;">Kindred's Response</div>
-        <div id="appOutput" class="output-text">Your polished message will appear here...</div>
+        <div id="appOutput" class="output-text">Your beautifully written version will appear here...</div>
       </div>
 
     </div>
@@ -360,119 +323,49 @@
 </div>
 
 <script>
-  const SUPABASE_URL  = 'https://zfjadtqjzziqnqqkrekk.supabase.co';
-  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmamFkdHFqenppcW5xcWtyZWtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MjAxOTUsImV4cCI6MjA4ODM5NjE5NX0.ga1GQEq5BO4DRZlNOUY9d7Zsx2bMfzxlxlc0WIvhb_E';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-
-  let storedEmail   = localStorage.getItem('kindred_email') || '';
-  let storedPlan    = 'free';
-  let isPaid        = false;
+  const BACKEND = 'https://kindred-evk6.onrender.com';
+  let storedEmail = localStorage.getItem('kindred_email') || '';
+  let isPro = false;
   let currentFormat = 'email';
-  const FREE_LIMIT   = 5;
-  const FREE_FORMATS = ['email', 'conversation'];
 
-  const MULTILINGUAL_PATTERNS = [
-    /\b(mo fe|e joo|e jo|jowo|ẹ jọwọ|bawo ni|ese|eku|nibo|kilode|eyin|emi oun|ṣe|jẹ|pẹlu|lati|naa)\b/i,
-    /\b(dey|nau|abi|wetin|wahala|abeg|oga|sabi|wey dey|no be|e be like|chop|pikin|bros|ehen|sha|sef|walahi|jare)\b/i,
-    /\b(biko|daalu|kedu|nna|nne|ginị|anyi|ulo|oge)\b/i,
-    /\b(yauwa|sannu|nagode|don allah|tare da)\b/i,
-    /\b(bonjour|merci|s'il vous|je suis|comment|pourquoi|nous sommes)\b/i,
-  ];
-
-  function isMultilingual(text) {
-    return MULTILINGUAL_PATTERNS.some(p => p.test(text));
-  }
-
-  // Session & Plan Check
+  // Initialize session and plan
   async function initSession() {
-    const { data } = await sb.auth.getSession();
-    if (!data || !data.session || !data.session.user) {
-      // window.location.href = 'kindred-auth.html';
+    if (!storedEmail) {
+      document.getElementById('planDisplay').textContent = 'Not logged in';
       return;
     }
 
-    storedEmail = data.session.user.email;
-    localStorage.setItem('kindred_email', storedEmail);
-
-    // Check plan from backend
     try {
-      const res = await fetch('https://kindred-evk6.onrender.com/check-subscription', {
+      const res = await fetch(`${BACKEND}/check-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: storedEmail })
       });
-      const planData = await res.json();
-      if (planData.success && planData.has_subscription) {
-        storedPlan = planData.plan || 'pro';
-        isPaid = true;
-      } else {
-        storedPlan = 'free';
-        isPaid = false;
-      }
+      const data = await res.json();
+
+      isPro = data.success && data.has_subscription;
+      document.getElementById('planDisplay').textContent = isPro ? 'Pro Plan ✦' : 'Free Plan (5 transforms left)';
     } catch(e) {
-      storedPlan = 'free';
-      isPaid = false;
+      document.getElementById('planDisplay').textContent = 'Free Plan';
     }
-
-    applyPlanUI();
-  }
-
-  function applyPlanUI() {
-    if (isPaid) {
-      document.getElementById('planDisplay').textContent = 'Pro Plan ✦';
-      document.getElementById('upgradeBanner').style.display = 'none';
-      // Unlock Pro features here if needed
-    } else {
-      document.getElementById('upgradeBanner').style.display = 'flex';
-      updateUsageDisplay(getLocalUsageCount());
-    }
-  }
-
-  function getLocalUsageCount() {
-    const key = 'kindred_usage_' + storedEmail;
-    const month = new Date().toISOString().slice(0,7);
-    try {
-      const data = JSON.parse(localStorage.getItem(key) || '{"count":0,"month":""}');
-      return data.month === month ? data.count : 0;
-    } catch(e) { return 0; }
-  }
-
-  function incrementLocalUsage() {
-    const key = 'kindred_usage_' + storedEmail;
-    const month = new Date().toISOString().slice(0,7);
-    const count = getLocalUsageCount() + 1;
-    localStorage.setItem(key, JSON.stringify({ count, month }));
-    updateUsageDisplay(count);
-  }
-
-  function updateUsageDisplay(count) {
-    if (isPaid) return;
-    const left = Math.max(0, FREE_LIMIT - count);
-    document.getElementById('planDisplay').textContent = `Free Plan ✦ (${left} left)`;
-  }
-
-  function showUpgradePrompt(msg) {
-    document.getElementById('appOutput').innerHTML = `
-      <div style="text-align:center;padding:40px 20px;">
-        <div style="font-size:2.8rem;margin-bottom:16px;">✦</div>
-        <div style="font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:12px;">${msg}</div>
-        <a href="kindred-pricing.html" style="background:var(--accent);color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;">Upgrade to Pro →</a>
-      </div>`;
-  }
-
-  function proFormatClick(name) {
-    if (isPaid) return;
-    showUpgradePrompt(name + ' is a Pro feature. Upgrade to unlock!');
   }
 
   function setFormat(el, fmt) {
-    if (!isPaid && !FREE_FORMATS.includes(fmt)) {
-      proFormatClick(fmt.charAt(0).toUpperCase() + fmt.slice(1));
+    if (!isPro && !['email', 'conversation'].includes(fmt)) {
+      alert("This format is available in Pro only. Upgrade to unlock more powerful writing tools.");
       return;
     }
     document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
     currentFormat = fmt;
+  }
+
+  function proFormatClick(el, fmt) {
+    if (isPro) {
+      setFormat(el, fmt);
+    } else {
+      alert("This is a Pro feature.\n\nUpgrade to Pro to access Business Proposals, Social Media Posts, Content Strategy, Teaching Explanations and more.");
+    }
   }
 
   function setTone(el) {
@@ -481,21 +374,16 @@
   }
 
   async function transformText() {
-    const out = document.getElementById('appOutput');
     const input = document.getElementById('appInput').value.trim();
     const tone = document.querySelector('.tone-pill.active')?.textContent || 'Professional';
+    const out = document.getElementById('appOutput');
 
-    if (!input) return;
+    if (!input) return alert("Please type something first.");
 
-    if (!isPaid && isMultilingual(input)) {
-      showUpgradePrompt('Multilingual input is a Pro feature.');
-      return;
-    }
-
-    out.textContent = "Kindred is thinking...";
+    out.textContent = "Kindred is thinking deeply...";
 
     try {
-      const res = await fetch('https://kindred-evk6.onrender.com/transform', {
+      const res = await fetch(`${BACKEND}/transform`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -505,32 +393,30 @@
           email: storedEmail
         })
       });
+
       const data = await res.json();
 
       if (data.success) {
-        incrementLocalUsage();
         out.textContent = data.output;
       } else if (data.upgrade_required) {
-        showUpgradePrompt(data.error);
+        out.innerHTML = `<strong style="color:#e66a6a;">${data.error}</strong><br><br><a href="kindred-pricing.html" style="color:var(--accent);">Upgrade to Pro →</a>`;
       } else {
-        out.textContent = "Error: " + (data.error || "Something went wrong");
+        out.textContent = data.error || "Something went wrong";
       }
     } catch (err) {
-      out.textContent = "Cannot reach backend. Please try again.";
+      out.textContent = "Cannot connect to Kindred. Please check your internet.";
     }
   }
 
-  function toggleMobileMenu() {
-    alert("Mobile menu coming in next update");
-  }
+  // Char counter
+  document.getElementById('appInput').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length + ' / 2000';
+  });
 
   // Initialize
-  window.onload = initSession;
-
-  // Char count
-  document.getElementById('appInput').addEventListener('input', function() {
-    document.getElementById('charCount').textContent = this.value.length + ' / 1000';
-  });
+  window.onload = () => {
+    initSession();
+  };
 </script>
 </body>
 </html>

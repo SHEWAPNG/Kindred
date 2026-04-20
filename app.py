@@ -66,8 +66,15 @@ def supabase_headers():
     }
 
 def get_subscription(email):
-    if email in OWNER_EMAILS:
+    if not email:
+        return {"has_subscription": False, "plan": "free"}
+    
+    email = email.strip().lower()
+    
+    # Force Pro for owner
+    if email in [e.strip().lower() for e in OWNER_EMAILS]:
         return {"has_subscription": True, "plan": "pro"}
+    
     try:
         res = requests.get(
             f"{SUPABASE_URL}/rest/v1/subscriptions?email=eq.{email}&status=eq.active&select=*",
@@ -482,28 +489,39 @@ def waitlist_list():
 def pay_naira():
     data = request.json or {}
     email = data.get('email', '').strip().lower()
-    plan = data.get('plan', 'pro')
+    plan_name = data.get('plan', 'pro')
     currency = data.get('currency', 'NGN').upper()
 
     if not email or '@' not in email:
         return jsonify({"success": False, "message": "Valid email is required"}), 400
 
-    amount = 5000000  # ₦5,000 = 5,000,000 kobo
+    # Use your actual Paystack Plan Code for recurring billing
+    PAYSTACK_PLAN_CODE = "PLN_m8wf2yudi3jflnx"
 
     try:
         res = requests.post(
             "https://api.paystack.co/transaction/initialize",
-            headers={"Authorization": f"Bearer {PAYSTACK_SECRET}", "Content-Type": "application/json"},
+            headers={
+                "Authorization": f"Bearer {PAYSTACK_SECRET}",
+                "Content-Type": "application/json"
+            },
             json={
                 "email": email,
-                "amount": amount,
+                "amount": 500000,                    # First payment = ₦5,000
                 "currency": currency,
+                "plan": PAYSTACK_PLAN_CODE,           # This enables recurring
                 "callback_url": "https://kindred-evk6.onrender.com/kindred-callback.html",
-                "metadata": {"plan": plan, "currency": currency, "source": "pricing_page"},
+                "metadata": {
+                    "plan": plan_name,
+                    "currency": currency,
+                    "source": "pricing_page",
+                    "is_recurring": True
+                },
                 "channels": ["card"]
             },
             timeout=15
         )
+
         result = res.json()
 
         if result.get('status') and result.get('data'):
@@ -512,10 +530,12 @@ def pay_naira():
                 "payment_url": result['data']['authorization_url'],
                 "reference": result['data']['reference']
             })
-        return jsonify({"success": False, "message": result.get('message', 'Payment init failed')}), 400
+
+        return jsonify({"success": False, "message": result.get('message', 'Failed to initialize subscription')}), 400
+
     except Exception as e:
-        print(f"Paystack init error: {e}")
-        return jsonify({"success": False, "message": "Payment service error. Try again."}), 500
+        print(f"Paystack subscription init error: {e}")
+        return jsonify({"success": False, "message": "Payment service error. Try again later."}), 500
 
 
 @app.route('/verify/paystack', methods=['POST'])
@@ -542,7 +562,7 @@ def verify_paystack():
         amount = result['data']['amount']
         currency = result['data']['metadata'].get('currency', 'NGN')
 
-        # Save subscription
+        # Save subscription in Supabase
         requests.post(
             f"{SUPABASE_URL}/rest/v1/subscriptions",
             headers={**supabase_headers(), "Prefer": "resolution=merge-duplicates"},
@@ -557,15 +577,15 @@ def verify_paystack():
             }
         )
 
-        print(f"✅ Pro upgrade successful for {email} | Ref: {reference}")
+        print(f"✅ Recurring Pro subscription activated for {email} | Ref: {reference}")
 
-        # Send Pro welcome email
+        # Send welcome email
         try:
             first = email.split('@')[0].capitalize()
             body_html = f"""
-            <p>Your payment was successful and you have been upgraded to <strong>Kindred Pro</strong>.</p>
-            <p>You now have unlimited transforms, all formats, multilingual support, voice input, and priority support.</p>
-            <p>Thank you for believing in Kindred.</p>
+            <p>Your subscription to Kindred Pro is now active!</p>
+            <p>You will be charged ₦5,000 monthly. You can cancel anytime from your Paystack dashboard.</p>
+            <p>Enjoy unlimited transforms and all Pro features.</p>
             """
             html = build_email_html(
                 headline="Welcome to Kindred Pro! 🎉",
@@ -575,10 +595,10 @@ def verify_paystack():
                 name=first
             )
             send_email(email, "Welcome to Kindred Pro!", html, first)
-        except Exception as e:
-            print(f"Pro welcome email failed: {e}")
+        except:
+            pass
 
-        return jsonify({"success": True, "plan": plan, "email": email, "message": "You are now on Kindred Pro"})
+        return jsonify({"success": True, "plan": plan, "email": email, "message": "Recurring subscription activated"})
 
     except Exception as e:
         print(f"Verify error: {e}")

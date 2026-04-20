@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
+
 from flask_cors import CORS
 import requests
 import os
@@ -241,8 +242,20 @@ def is_multilingual(text):
 # ════════════════════════════════
 
 @app.route('/', methods=['GET'])
-def home():
-    return jsonify({"message": "Kindred backend is live ✦", "status": "running"})
+# ====================== SERVE HTML FILES ======================
+@app.route('/')
+def homepage():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:filename>')
+def serve_html(filename):
+    """Serve all .html files directly"""
+    if filename.endswith(('.html', '.css', '.js')) or '.' not in filename:
+        try:
+            return send_from_directory('.', filename)
+        except:
+            return jsonify({"error": "File not found"}), 404
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/health', methods=['GET'])
 def health():

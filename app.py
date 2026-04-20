@@ -233,16 +233,40 @@ def build_email_html(headline, body_html, cta_text="", cta_link="", name=""):
 # ════════════════════════════════
 # MULTILINGUAL DETECTION
 # ════════════════════════════════
+# ════════════════════════════════
+# MULTILINGUAL DETECTION (Yoruba, Pidgin, Hausa, French + more)
+# ════════════════════════════════
 MULTILINGUAL_PATTERNS = [
-    _re.compile(r'\b(mo fe|e joo|e jo|jowo|bawo ni|ese|eku aro|eku ile|eku ise|nibo|kilode|eyin|emi ni|se o|jẹ|pẹlu|lati|naa|àwa|ẹ jọwọ|ọmọ|ọdun|ile|owo)\b', _re.IGNORECASE),
-    _re.compile(r'\b(dey|nau|abi|wetin|wahala|abeg|oga|sabi|wey|no be|e be like|chop|pikin|bros|ehen|sha|sef|walahi|jare|na im|dem say|how far|i wan|make i|no dey|you sabi)\b', _re.IGNORECASE),
-    _re.compile(r'\b(biko|daalu|kedu|nna m|nne m|ginị|anyi|ulo|oge|o di mma|ihe|ndi|ha|ya|obodo|ọ bụ)\b', _re.IGNORECASE),
-    _re.compile(r'\b(yauwa|sannu|nagode|don allah|tare da|ina kwana|lafiya|malam|alhaji|wallahi|insha allah|kai|kin|kun|suna)\b', _re.IGNORECASE),
-    _re.compile(r'\b(bonjour|bonsoir|merci|s\'il vous|je suis|je veux|comment|pourquoi|nous sommes|c\'est|qu\'est|je ne|il faut|voici|voilà)\b', _re.IGNORECASE),
+    # Yoruba
+    _re.compile(r'\b(mo fe|e joo|e jo|jowo|bawo ni|ese|eku aro|eku ile|eku ise|nibo|kilode|eyin|emi ni|se o|jẹ|pẹlu|lati|naa|àwa|ẹ jọwọ|ọmọ|ọdun|ile|owo|kilode|bawo|se|o|ni)\b', _re.IGNORECASE),
+    
+    # Nigerian Pidgin
+    _re.compile(r'\b(dey|nau|abi|wetin|wahala|abeg|oga|sabi|wey|no be|e be like|chop|pikin|bros|ehen|sha|sef|walahi|jare|na im|dem say|how far|i wan|make i|no dey|you sabi|commot|wetin dey|how you dey)\b', _re.IGNORECASE),
+    
+    # Hausa
+    _re.compile(r'\b(yauwa|sannu|nagode|don allah|tare da|ina kwana|lafiya|malam|alhaji|wallahi|insha allah|kai|kin|kun|suna|ban|ka|ki|mu|su|da|ina|za|ka|ki)\b', _re.IGNORECASE),
+    
+    # French
+    _re.compile(r'\b(bonjour|bonsoir|merci|s\'il vous plaît|je suis|je veux|comment|pourquoi|nous sommes|c\'est|qu\'est|je ne|il faut|voici|voilà|monsieur|madame|au revoir|enchanté)\b', _re.IGNORECASE),
+    
+    # General multilingual fallback (common words in many African/French contexts)
+    _re.compile(r'\b(merci|bon|oui|non|je|tu|il|elle|nous|vous|ils|aller|faire|dire|savoir|voir|venir|aller)\b', _re.IGNORECASE),
 ]
 
 def is_multilingual(text):
     return any(p.search(text) for p in MULTILINGUAL_PATTERNS)
+
+def detect_language(text):
+    text_lower = text.lower()
+    if any(word in text_lower for word in ['mo fe', 'jowo', 'bawo', 'kilode', 'ese', 'emi ni']):
+        return "yoruba"
+    if any(word in text_lower for word in ['yauwa', 'sannu', 'nagode', 'wallahi', 'insha allah']):
+        return "hausa"
+    if any(word in text_lower for word in ['bonjour', 'merci', 'je suis', 'comment', 'pourquoi']):
+        return "french"
+    if any(word in text_lower for word in ['wetin', 'abeg', 'oga', 'sha', 'walahi']):
+        return "pidgin"
+    return "english"
 
 
 # ════════════════════════════════
@@ -279,71 +303,76 @@ def transform():
     tone = data.get('tone', 'professional')
     instruction = data.get('instruction', '').strip()
     email = data.get('email', '').strip().lower()
+    output_language = data.get('output_language', 'auto').lower()
 
-    if not raw_text:
-        return jsonify({"success": False, "error": "Text is required"})
-
-    if not email:
-        return jsonify({"success": False, "error": "Email is required"})
+    if not raw_text or not email:
+        return jsonify({"success": False, "error": "Text and email are required"})
 
     sub = get_subscription(email)
     is_pro = sub["has_subscription"]
 
-    print(f"Transform → Email: {email} | Pro: {is_pro} | Format: {format_type} | Multilingual: {is_multilingual(raw_text)}")
+    print(f"Transform → Email: {email} | Pro: {is_pro} | Format: {format_type} | Output Lang: {output_language}")
 
     # ====================== ACCESS CONTROL ======================
-    if is_pro:
-        # Pro users get everything
-        pass
-    else:
-        # Free users restrictions
+    if not is_pro:
         FREE_FORMATS = ['email', 'conversation']
         if format_type not in FREE_FORMATS:
             return jsonify({"success": False, "upgrade_required": True,
                             "error": f"{format_type.replace('_', ' ').title()} is a Pro feature."})
 
-        if not instruction and is_multilingual(raw_text):
+        if is_multilingual(raw_text):
             return jsonify({"success": False, "upgrade_required": True,
-                            "error": "Writing in Yoruba, Hausa, Pidgin or French is a Pro feature."})
+                            "error": "Multilingual input is a Pro feature."})
 
         usage = get_usage(email)
         if usage >= 5:
             return jsonify({"success": False, "upgrade_required": True,
-                            "error": "You have used all 5 free transforms this month. Upgrade to Pro."})
+                            "error": "Free limit reached. Upgrade to Pro."})
+
+    # ====================== LANGUAGE LOGIC ======================
+    detected_lang = detect_language(raw_text)
+    
+    # Use user selection if provided, otherwise auto-detect
+    if output_language == 'auto':
+        final_lang = detected_lang
+    else:
+        final_lang = output_language
 
     # ====================== FORMAT GUIDES ======================
     format_guides = {
-        "email": "Write a clear, professional email with subject line, greeting, body, and proper sign-off.",
-        "conversation": "Write a natural, warm WhatsApp-style conversation. Short sentences, emojis if appropriate.",
-        "proposal": "Write a professional business proposal. Include: Problem, Solution, Benefits, Next Steps.",
-        "social_media_post": "Write an engaging social media post (Instagram/Twitter/LinkedIn). Strong hook, storytelling, call-to-action, and relevant hashtags.",
-        "content_strategy": "Create a content strategy or plan. Include goals, target audience, topics, tone, and posting schedule.",
-        "essay": "Write a well-structured essay. Clear introduction, body paragraphs with arguments, and conclusion. Academic tone.",
-        "speech": "Write a powerful speech (wedding, motivational, presentation). Emotional, rhythmic, and memorable.",
-        "product_description": "Write persuasive product descriptions that sell. Highlight benefits, not just features.",
-        "cover_letter": "Write a compelling job application cover letter. Show enthusiasm and fit for the role.",
-        "teaching_explanation": "Explain the topic clearly as if teaching a beginner or teenager. Use simple language, examples, and analogies."
+        "email": "Write a clear, professional email with subject, greeting, body and sign-off.",
+        "conversation": "Write a natural, warm WhatsApp-style conversation.",
+        "proposal": "Write a professional business proposal with clear sections.",
+        "social_media_post": "Write an engaging social media post with strong hook and call-to-action.",
+        "content_strategy": "Create a content strategy including goals, audience, topics and schedule.",
+        "essay": "Write a well-structured essay with introduction, body and conclusion.",
+        "speech": "Write a powerful speech (wedding, motivational, or presentation).",
+        "teaching_explanation": "Explain the topic clearly like teaching a beginner. Use simple language and examples.",
+        "product_description": "Write persuasive product description highlighting benefits.",
+        "cover_letter": "Write a compelling job application cover letter."
     }
 
-    guide = format_guides.get(format_type, "Write clearly, professionally, and naturally.")
+    guide = format_guides.get(format_type, "Write clearly and naturally.")
 
-    # Build prompt
-    if instruction:
-        prompt = f"{instruction}\n\n{raw_text}\n\nOutput ONLY the final result. No explanations."
-    else:
-        prompt = f"""You are Kindred — a premium, empathetic, and culturally intelligent writing assistant.
-You understand Yoruba, Hausa, Pidgin, French, and English perfectly.
-Transform the user's messy, emotional, or multilingual input into polished, natural, and effective writing.
+    # Language instruction
+    lang_instruction = f"Respond entirely in {final_lang.capitalize()}." if final_lang != "english" else "Respond in natural, polished English."
+
+    # Final Prompt
+    prompt = f"""You are Kindred — a warm, culturally intelligent writing assistant.
+You perfectly understand Yoruba, Hausa, Pidgin, French, and English.
+
+{lang_instruction}
 
 FORMAT: {format_type.replace('_', ' ').upper()}
 TONE: {tone}
-GUIDELINES:
+
+Guidelines:
 {guide}
 
-User input:
+User wrote:
 {raw_text}
 
-Output ONLY the final written piece. No labels, no explanations, no quotes."""
+Output ONLY the final transformed text. No explanations, no labels."""
 
     try:
         res = requests.post(
@@ -355,24 +384,25 @@ Output ONLY the final written piece. No labels, no explanations, no quotes."""
         result = res.json()
 
         if 'message' in result and result['message'].get('content'):
-            output = result['message']['content'][0]['text']
-            
+            output = result['message']['content'][0]['text'].strip()
+
             if not is_pro and email:
                 increment_usage(email)
 
             return jsonify({
-                "success": True, 
-                "output": output.strip(),
+                "success": True,
+                "output": output,
                 "plan": sub["plan"],
-                "is_pro": is_pro
+                "detected_lang": detected_lang,
+                "output_lang": final_lang
             })
         else:
             return jsonify({"success": False, "error": "AI failed to generate response"})
 
     except Exception as e:
         print(f"Transform error: {e}")
-        return jsonify({"success": False, "error": "Service temporarily unavailable"})
-
+        return jsonify({"success": False, "error": "AI service error. Please try again."})
+   
 # ── ENSURE NEW USER IS FREE
 @app.route('/ensure-free-user', methods=['POST'])
 def ensure_free_user():
@@ -488,11 +518,11 @@ You type whatever is on your mind — messy, unfiltered, even in Yoruba or Pidgi
             name=name
         )
         send_email(email, f"Welcome to Kindred, {first} ✦", html, name)
-        print(f"✅ Waitlist welcome email sent to {email}")
+        print(f"✅  welcome email sent to {email}")
     except Exception as e:
-        print(f"Waitlist email failed for {email}: {e}")
+        print(f" email failed for {email}: {e}")
 
-    return jsonify({"success": True, "message": "You're on the list! Welcome email sent."})
+    return jsonify({"success": True, "message": "Welcome to Kindred! Welcome email sent."})
 
 
 # ── ADMIN ROUTES

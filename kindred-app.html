@@ -95,11 +95,7 @@
     gap: 1rem;
   }
 
-  .app-title {
-    font-family: 'Fraunces', serif;
-    font-size: 1.35rem;
-    color: var(--accent);
-  }
+  .app-title { font-family: 'Fraunces', serif; font-size: 1.35rem; color: var(--accent); }
 
   .app-body {
     display: grid;
@@ -136,17 +132,25 @@
 
   .sidebar-item:hover { background: rgba(255,138,138,0.1); }
   .sidebar-item.active { background: rgba(255,138,138,0.15); color: var(--accent); font-weight: 600; }
+  .locked { opacity: 0.65; cursor: not-allowed; }
 
-  .locked { opacity: 0.6; cursor: not-allowed; }
-
-  /* Language Selector */
+  /* Refined Language Dropdown */
   .lang-select {
     width: 100%;
-    padding: 12px;
-    border-radius: 12px;
+    padding: 12px 16px;
+    border-radius: 16px;
     border: 2px solid rgba(255,138,138,0.3);
     background: white;
+    font-size: 1rem;
+    color: var(--text);
     margin-top: 8px;
+    cursor: pointer;
+  }
+
+  .lang-select:disabled {
+    background: #f0e8e8;
+    color: var(--muted);
+    cursor: not-allowed;
   }
 
   .tone-container {
@@ -164,6 +168,7 @@
     background: white;
     color: var(--text);
     cursor: pointer;
+    transition: all 0.3s;
   }
 
   .tone-pill.active {
@@ -172,9 +177,7 @@
     border-color: var(--accent);
   }
 
-  .input-area, .output-area {
-    padding: 2rem;
-  }
+  .input-area, .output-area { padding: 2rem; }
 
   .textarea {
     width: 100%;
@@ -229,7 +232,7 @@
 <div class="hero">
   <span class="tag">THE APP</span>
   <h1>Your thoughts.<br><em>Perfectly said.</em></h1>
-  <p>Type messy, emotional, or in any language.<br>Kindred turns it into clear, confident writing — in your preferred language.</p>
+  <p>Type messy, emotional, or in any language.<br>Kindred replies in the language you understand best.</p>
 </div>
 
 <div class="app-container">
@@ -262,8 +265,8 @@
         <div class="sidebar-item locked" onclick="proFormatClick(this, 'cover_letter')">📄 Cover Letter</div>
 
         <div class="sidebar-label" style="margin-top:2.5rem;">Reply in</div>
-        <select id="outputLanguage" class="lang-select" onchange="updateOutputLang()">
-          <option value="auto">Auto (Same as input)</option>
+        <select id="outputLanguage" class="lang-select" onchange="updateOutputLang()" disabled>
+          <option value="auto">Auto (Detect language)</option>
           <option value="english">English</option>
           <option value="yoruba">Yoruba</option>
           <option value="hausa">Hausa</option>
@@ -326,6 +329,11 @@
 
       isPro = data.success && data.has_subscription;
       document.getElementById('planDisplay').textContent = isPro ? 'Pro Plan ✦' : 'Free Plan (5 left)';
+
+      // Unlock language dropdown for Pro users
+      const langSelect = document.getElementById('outputLanguage');
+      langSelect.disabled = !isPro;
+      if (isPro) langSelect.style.borderColor = 'var(--accent)';
     } catch(e) {
       document.getElementById('planDisplay').textContent = 'Free Plan';
     }
@@ -345,7 +353,7 @@
     if (isPro) {
       setFormat(el, fmt);
     } else {
-      alert("This is a Pro feature.\n\nUpgrade to unlock powerful formats like proposals, content strategy, teaching explanations, and more.");
+      alert("This is a Pro feature.\n\nUpgrade to unlock powerful formats.");
     }
   }
 
@@ -376,7 +384,7 @@
           format: currentFormat,
           tone: tone.toLowerCase(),
           email: storedEmail,
-          output_language: outputLanguage   // ← Sending the selected language
+          output_language: outputLanguage
         })
       });
 
@@ -390,7 +398,7 @@
         out.textContent = data.error || "Something went wrong";
       }
     } catch (err) {
-      out.textContent = "Cannot connect to Kindred right now. Please try again.";
+      out.textContent = "Cannot connect to Kindred. Please check your connection.";
     }
   }
 

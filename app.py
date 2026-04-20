@@ -416,25 +416,40 @@ Output ONLY the final transformed text. No explanations, no labels."""
 def ensure_free_user():
     data = request.json or {}
     email = data.get('email', '').strip().lower()
+    
     if not email:
         return jsonify({"success": False, "message": "Email required"}), 400
+
+    # Do NOT force Pro for anyone except owner
+    if email in [e.strip().lower() for e in OWNER_EMAILS]:
+        return jsonify({"success": True, "plan": "pro"})
+
     try:
+        # Check if user already exists in subscriptions
         res = requests.get(
             f"{SUPABASE_URL}/rest/v1/subscriptions?email=eq.{email}&select=*",
             headers=supabase_headers()
         )
-        if not res.json():
+        existing = res.json()
+
+        if not existing:
+            # Create as FREE only
             requests.post(
                 f"{SUPABASE_URL}/rest/v1/subscriptions",
                 headers={**supabase_headers(), "Prefer": "resolution=merge-duplicates"},
-                json={"email": email, "plan": "free", "status": "active"}
+                json={
+                    "email": email,
+                    "plan": "free",
+                    "status": "active"
+                }
             )
-            print(f"✅ New user set as FREE: {email}")
+            print(f"✅ New user created as FREE: {email}")
+        
         return jsonify({"success": True, "plan": "free"})
+    
     except Exception as e:
-        print(f"Error ensuring free user: {e}")
+        print(f"Ensure free user error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
-
 
 # ── SEND WELCOME EMAIL AFTER FIRST SIGN-IN
 @app.route('/send-welcome', methods=['POST'])

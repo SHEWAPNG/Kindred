@@ -86,13 +86,14 @@
   .footer-brand p { font-size: 0.95rem; color: var(--muted); max-width: 260px; line-height: 1.6; }
   .footer-col h4 { font-size: 0.8rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
   .footer-col a { color: var(--muted); text-decoration: none; display: block; margin-bottom: 10px; }
-  .footer-bottom { margin-top: 60px; padding-top: 30px; border-top: 1px solid rgba(255,138,138,0.2); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; font-size: 0.85rem; color: var(--muted); }
+  .footer-bottom { margin-top: 60px; padding-top: 30px; border-top: 1px solid rgba(255,138,138,0.2); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; text-align: center; font-size: 0.85rem; color: var(--muted); }
 
   @media (max-width: 768px) {
     nav { padding: 1rem 5%; }
     .nav-links { display: none; }
     .hamburger { display: flex; }
     .hero { padding: 120px 5% 60px; }
+    .footer-bottom { flex-direction: column; gap: 8px; }
   }
 </style>
 </head>
@@ -182,7 +183,7 @@
 <!-- CTA -->
 <div class="cta-section">
   <h2>Ready to say exactly what you mean?</h2>
-  <p>Join the waitlist and be among the first to use Kindred.</p>
+  <p>Join  our newsletter and have premium access to Kindred Updates.</p>
   <div class="waitlist-form">
     <input type="email" class="waitlist-input" id="waitlistEmail" placeholder="your@email.com">
     <button class="cta-submit" onclick="joinWaitlist()">Join Waitlist</button>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kindred — Confirming Payment</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFF5F5;
+    --accent: #FF8A8A;
+    --text: #3D2B2B;
+    --muted: #5C4A4A;
+    --surface: #fff0f5;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .box {
+    text-align: center;
+    max-width: 480px;
+    padding: 48px 32px;
+    background: white;
+    border-radius: 28px;
+    border: 2px solid var(--accent);
+    box-shadow: 0 20px 60px rgba(255,138,138,0.15);
+  }
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+    margin-bottom: 40px;
+    text-decoration: none;
+  }
+  .icon {
+    width: 80px; height: 80px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.4rem; margin: 0 auto 24px;
+  }
+  .icon-loading { background: var(--surface); border: 3px solid #e8d5d5; animation: pulse 1.5s infinite; }
+  .icon-success { background: rgba(40,200,100,0.1); border: 3px solid #28c864; }
+  .icon-error   { background: rgba(255,80,80,0.1); border: 3px solid #ff5050; }
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.5 } }
+
+  h1 { font-family: 'Fraunces', serif; font-size: 1.9rem; margin-bottom: 12px; }
+  p { color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+  .btn {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 14px 36px;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .btn:hover { background: #e66a6a; }
+  .ref { font-size: 0.82rem; color: #9a8080; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <a href="kindred.html" class="logo">Kindred</a>
+
+  <div id="loadingState">
+    <div class="icon icon-loading">⏳</div>
+    <h1>Confirming your payment...</h1>
+    <p>Please wait while we securely verify with Paystack.</p>
+  </div>
+
+  <div id="successState" style="display:none">
+    <div class="icon icon-success">🎉</div>
+    <h1>You're now on Pro!</h1>
+    <p>Welcome to Kindred Pro. You have unlimited access.</p>
+    <a href="kindred-app.html" class="btn" id="openAppBtn">Open Kindred App →</a>
+    <div class="ref" id="refDisplay"></div>
+  </div>
+
+  <div id="errorState" style="display:none">
+    <div class="icon icon-error">❌</div>
+    <h1>Verification Failed</h1>
+    <p id="errorMsg">We couldn't confirm your payment. Contact support with the reference below if money was deducted.</p>
+    <a href="kindred-pricing.html" class="btn">Try Again</a>
+    <div class="ref" id="errorRef"></div>
+  </div>
+</div>
+
+<script>
+const BACKEND = 'https://kindred-evk6.onrender.com';
+
+async function verifyPayment() {
+  const params = new URLSearchParams(window.location.search);
+  const reference = params.get('reference') || params.get('trxref');
+
+  if (!reference) {
+    showError('No payment reference found. Please try again.');
+    return;
+  }
+
+  document.getElementById('refDisplay').textContent = 'Ref: ' + reference;
+  document.getElementById('errorRef').textContent = 'Ref: ' + reference;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(`${BACKEND}/verify/paystack`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference })
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        show('successState');
+        // Auto redirect to app after 2.5 seconds
+        setTimeout(() => {
+          window.location.href = 'kindred-app.html';
+        }, 2500);
+        return;
+      } else {
+        showError(result.error || 'Payment verification failed.');
+        return;
+      }
+    } catch (e) {
+      if (attempt === 3) {
+        showError('Could not connect to our server. Please contact support.');
+      }
+      await new Promise(r => setTimeout(r, 1500));
+    }
+  }
+}
+
+function show(state) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('successState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'none';
+  document.getElementById(state).style.display = 'block';
+}
+
+function showError(msg) {
+  show('errorState');
+  document.getElementById('errorMsg').innerHTML = msg;
+}
+
+verifyPayment();
+</script>
+</body>
+</html>

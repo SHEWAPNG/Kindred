@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kindred — The App</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #FFF5F5;
+    --accent: #FF8A8A;
+    --text: #3D2B2B;
+    --muted: #5C4A4A;
+    --card: #ffffff;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+
+  nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(255,245,245,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,138,138,0.25);
+    padding: 1rem 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+  }
+
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .nav-links a:hover,
+  .nav-links a.active {
+    color: var(--accent);
+  }
+
+  .nav-cta {
+    background: var(--accent);
+    color: white;
+    padding: 0.75rem 1.8rem;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+  }
+
+  .hamburger span {
+    width: 28px;
+    height: 3px;
+    background: var(--text);
+    border-radius: 3px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 160px 5% 100px;
+    text-align: center;
+  }
+
+  .hero .tag {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .hero h1 em {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 580px;
+    margin: 0 auto;
+  }
+
+  /* Main App */
+  .app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 5%;
+  }
+
+  .app-card {
+    background: var(--card);
+    border-radius: 28px;
+    border: 2px solid var(--accent);
+    overflow: hidden;
+    box-shadow: 0 25px 70px rgba(255,138,138,0.15);
+  }
+
+  .app-header {
+    padding: 1.25rem 2rem;
+    background: rgba(255,245,245,0.95);
+    border-bottom: 1px solid rgba(255,138,138,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .app-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    color: var(--accent);
+  }
+
+  /* App Body */
+  .app-body {
+    display: grid;
+    grid-template-columns: 260px 1fr 1fr;
+    min-height: 560px;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: rgba(255,245,245,0.7);
+    padding: 2rem 1.5rem;
+    border-right: 1px solid rgba(255,138,138,0.2);
+  }
+
+  .sidebar-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+  }
+
+  .sidebar-item {
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .sidebar-item:hover {
+    background: rgba(255,138,138,0.1);
+  }
+
+  .sidebar-item.active {
+    background: rgba(255,138,138,0.15);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Tone Pills */
+  .tone-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .tone-pill {
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    border: 2px solid rgba(255,138,138,0.3);
+    background: white;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .tone-pill:hover,
+  .tone-pill.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* Input & Output Areas */
+  .input-area, .output-area {
+    padding: 2rem;
+  }
+
+  .textarea {
+    width: 100%;
+    min-height: 280px;
+    background: #f8f0f0;
+    border: 2px solid rgba(255,138,138,0.3);
+    border-radius: 20px;
+    padding: 1.5rem;
+    font-size: 1.05rem;
+    resize: none;
+    outline: none;
+  }
+
+  .textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .output-text {
+    min-height: 280px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .transform-btn {
+    margin-top: 1rem;
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  .transform-btn:hover {
+    background: #e66a6a;
+  }
+
+  /* Responsive */
+  @media (max-width: 992px) {
+    .app-body {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      border-right: none;
+      border-bottom: 1px solid rgba(255,138,138,0.2);
+    }
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 5%; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .hero { padding: 120px 5% 60px; }
+    .app-container { padding: 1rem 5%; }
+    .input-area, .output-area { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="kindred.html" class="nav-logo">Kindred</a>
+  <ul class="nav-links">
+    <li><a href="kindred-app.html" class="active">Product</a></li>
+    <li><a href="kindred-about.html">About</a></li>
+  </ul>
+  <a href="kindred-pricing.html" class="nav-cta">Upgrade Plan</a>
+  <div class="hamburger" onclick="toggleMobileMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="hero">
+  <span class="tag">THE APP</span>
+  <h1>Your thoughts.<br><em>Perfectly said.</em></h1>
+  <p>Type anything — messy, emotional, or in any language.<br>Kindred turns it into clear, confident words.</p>
+</div>
+
+<div class="app-container">
+  <div class="app-card">
+
+    <div class="app-header">
+      <div class="app-title">Kindred Transform</div>
+      <div id="planDisplay">Free Plan • Checking...</div>
+    </div>
+
+    <div class="app-body">
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-label">Format</div>
+        <div class="sidebar-item active" onclick="setFormat(this, 'email')">✉️ Email</div>
+        <div class="sidebar-item" onclick="setFormat(this, 'conversation')">💬 Conversation</div>
+        <div class="sidebar-item locked" onclick="proFormatClick('Essay')">📝 Essay 🔒</div>
+        <div class="sidebar-item locked" onclick="proFormatClick('Caption')">📸 Caption 🔒</div>
+        <div class="sidebar-item locked" onclick="proFormatClick('Proposal')">💼 Proposal 🔒</div>
+
+        <div class="sidebar-label" style="margin-top:2.5rem;">Tone</div>
+        <div class="tone-container">
+          <div class="tone-pill active" onclick="setTone(this)">Professional</div>
+          <div class="tone-pill" onclick="setTone(this)">Casual</div>
+          <div class="tone-pill" onclick="setTone(this)">Formal</div>
+          <div class="tone-pill" onclick="setTone(this)">Empathetic</div>
+          <div class="tone-pill" onclick="setTone(this)">Anxiety Mode</div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <textarea id="appInput" class="textarea" placeholder="Just type whatever is on your mind... e.g. 'i wanna ask my client for payment but dont want to seem desperate'" maxlength="1000"></textarea>
+        
+        <div style="margin-top:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+          <span id="charCount" style="color:var(--muted);">0 / 1000</span>
+          <button class="transform-btn" onclick="transformText()">✦ Transform</button>
+        </div>
+      </div>
+
+      <!-- Output Area -->
+      <div class="output-area">
+        <div style="margin-bottom:1rem; color:var(--accent); font-weight:600;">Kindred's Response</div>
+        <div id="appOutput" class="output-text">Your polished message will appear here...</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL  = 'https://zfjadtqjzziqnqqkrekk.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmamFkdHFqenppcW5xcWtyZWtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MjAxOTUsImV4cCI6MjA4ODM5NjE5NX0.ga1GQEq5BO4DRZlNOUY9d7Zsx2bMfzxlxlc0WIvhb_E';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  let storedEmail   = localStorage.getItem('kindred_email') || '';
+  let storedPlan    = 'free';
+  let isPaid        = false;
+  let currentFormat = 'email';
+  const FREE_LIMIT   = 5;
+  const FREE_FORMATS = ['email', 'conversation'];
+
+  const MULTILINGUAL_PATTERNS = [
+    /\b(mo fe|e joo|e jo|jowo|ẹ jọwọ|bawo ni|ese|eku|nibo|kilode|eyin|emi oun|ṣe|jẹ|pẹlu|lati|naa)\b/i,
+    /\b(dey|nau|abi|wetin|wahala|abeg|oga|sabi|wey dey|no be|e be like|chop|pikin|bros|ehen|sha|sef|walahi|jare)\b/i,
+    /\b(biko|daalu|kedu|nna|nne|ginị|anyi|ulo|oge)\b/i,
+    /\b(yauwa|sannu|nagode|don allah|tare da)\b/i,
+    /\b(bonjour|merci|s'il vous|je suis|comment|pourquoi|nous sommes)\b/i,
+  ];
+
+  function isMultilingual(text) {
+    return MULTILINGUAL_PATTERNS.some(p => p.test(text));
+  }
+
+  // Session & Plan Check
+  async function initSession() {
+    const { data } = await sb.auth.getSession();
+    if (!data || !data.session || !data.session.user) {
+      // window.location.href = 'kindred-auth.html';
+      return;
+    }
+
+    storedEmail = data.session.user.email;
+    localStorage.setItem('kindred_email', storedEmail);
+
+    // Check plan from backend
+    try {
+      const res = await fetch('https://kindred-evk6.onrender.com/check-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: storedEmail })
+      });
+      const planData = await res.json();
+      if (planData.success && planData.has_subscription) {
+        storedPlan = planData.plan || 'pro';
+        isPaid = true;
+      } else {
+        storedPlan = 'free';
+        isPaid = false;
+      }
+    } catch(e) {
+      storedPlan = 'free';
+      isPaid = false;
+    }
+
+    applyPlanUI();
+  }
+
+  function applyPlanUI() {
+    if (isPaid) {
+      document.getElementById('planDisplay').textContent = 'Pro Plan ✦';
+      document.getElementById('upgradeBanner').style.display = 'none';
+      // Unlock Pro features here if needed
+    } else {
+      document.getElementById('upgradeBanner').style.display = 'flex';
+      updateUsageDisplay(getLocalUsageCount());
+    }
+  }
+
+  function getLocalUsageCount() {
+    const key = 'kindred_usage_' + storedEmail;
+    const month = new Date().toISOString().slice(0,7);
+    try {
+      const data = JSON.parse(localStorage.getItem(key) || '{"count":0,"month":""}');
+      return data.month === month ? data.count : 0;
+    } catch(e) { return 0; }
+  }
+
+  function incrementLocalUsage() {
+    const key = 'kindred_usage_' + storedEmail;
+    const month = new Date().toISOString().slice(0,7);
+    const count = getLocalUsageCount() + 1;
+    localStorage.setItem(key, JSON.stringify({ count, month }));
+    updateUsageDisplay(count);
+  }
+
+  function updateUsageDisplay(count) {
+    if (isPaid) return;
+    const left = Math.max(0, FREE_LIMIT - count);
+    document.getElementById('planDisplay').textContent = `Free Plan ✦ (${left} left)`;
+  }
+
+  function showUpgradePrompt(msg) {
+    document.getElementById('appOutput').innerHTML = `
+      <div style="text-align:center;padding:40px 20px;">
+        <div style="font-size:2.8rem;margin-bottom:16px;">✦</div>
+        <div style="font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:12px;">${msg}</div>
+        <a href="kindred-pricing.html" style="background:var(--accent);color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;">Upgrade to Pro →</a>
+      </div>`;
+  }
+
+  function proFormatClick(name) {
+    if (isPaid) return;
+    showUpgradePrompt(name + ' is a Pro feature. Upgrade to unlock!');
+  }
+
+  function setFormat(el, fmt) {
+    if (!isPaid && !FREE_FORMATS.includes(fmt)) {
+      proFormatClick(fmt.charAt(0).toUpperCase() + fmt.slice(1));
+      return;
+    }
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    currentFormat = fmt;
+  }
+
+  function setTone(el) {
+    document.querySelectorAll('.tone-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  async function transformText() {
+    const out = document.getElementById('appOutput');
+    const input = document.getElementById('appInput').value.trim();
+    const tone = document.querySelector('.tone-pill.active')?.textContent || 'Professional';
+
+    if (!input) return;
+
+    if (!isPaid && isMultilingual(input)) {
+      showUpgradePrompt('Multilingual input is a Pro feature.');
+      return;
+    }
+
+    out.textContent = "Kindred is thinking...";
+
+    try {
+      const res = await fetch('https://kindred-evk6.onrender.com/transform', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: input,
+          format: currentFormat,
+          tone: tone.toLowerCase(),
+          email: storedEmail
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        incrementLocalUsage();
+        out.textContent = data.output;
+      } else if (data.upgrade_required) {
+        showUpgradePrompt(data.error);
+      } else {
+        out.textContent = "Error: " + (data.error || "Something went wrong");
+      }
+    } catch (err) {
+      out.textContent = "Cannot reach backend. Please try again.";
+    }
+  }
+
+  function toggleMobileMenu() {
+    alert("Mobile menu coming in next update");
+  }
+
+  // Initialize
+  window.onload = initSession;
+
+  // Char count
+  document.getElementById('appInput').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length + ' / 1000';
+  });
+</script>
+</body>
+</html>

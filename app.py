@@ -71,22 +71,30 @@ def get_subscription(email):
     
     email = email.strip().lower()
     
-    # Force Pro for owner - very strict
+    # ONLY owner emails are forced Pro — no one else
     if email in [e.strip().lower() for e in OWNER_EMAILS]:
-        print(f"✅ Owner detected as Pro: {email}")
+        print(f"✅ OWNER FORCED PRO: {email}")
         return {"has_subscription": True, "plan": "pro"}
     
+    # Check Supabase for actual paid subscription
     try:
         res = requests.get(
             f"{SUPABASE_URL}/rest/v1/subscriptions?email=eq.{email}&status=eq.active&select=*",
             headers=supabase_headers(), timeout=10
         )
         rows = res.json()
+        
         if rows and len(rows) > 0:
-            return {"has_subscription": True, "plan": rows[0].get("plan", "pro")}
+            plan = rows[0].get("plan", "pro")
+            print(f"✅ Paid subscription found for {email} → {plan}")
+            return {"has_subscription": True, "plan": plan}
+        
+        # No active subscription found → strictly Free
+        print(f"User is Free: {email}")
         return {"has_subscription": False, "plan": "free"}
+        
     except Exception as e:
-        print("Subscription check error:", e)
+        print(f"Subscription check error for {email}: {e}")
         return {"has_subscription": False, "plan": "free"}
     
 def get_usage(email):

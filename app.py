@@ -193,7 +193,7 @@ def detect_language(text):
 # ROUTES
 @app.route('/')
 def homepage():
-    return send_from_directory('.', 'kindred.html')
+    return send_from_directory('.', 'index.html')
 
 @app.route('/<path:filename>')
 def serve_html(filename):

@@ -71,8 +71,9 @@ def get_subscription(email):
     
     email = email.strip().lower()
     
-    # Force Pro for owner
+    # Force Pro for owner - very strict
     if email in [e.strip().lower() for e in OWNER_EMAILS]:
+        print(f"✅ Owner detected as Pro: {email}")
         return {"has_subscription": True, "plan": "pro"}
     
     try:
@@ -87,7 +88,7 @@ def get_subscription(email):
     except Exception as e:
         print("Subscription check error:", e)
         return {"has_subscription": False, "plan": "free"}
-
+    
 def get_usage(email):
     month = datetime.datetime.now().strftime("%Y-%m")
     try:
@@ -277,26 +278,37 @@ def transform():
     format_type = data.get('format', 'email').lower()
     tone = data.get('tone', 'professional')
     instruction = data.get('instruction', '')
-    email = data.get('email', '')
+    email = data.get('email', '').strip().lower()
 
-    FREE_FORMATS = ['email', 'conversation']
+    if not email:
+        return jsonify({"success": False, "error": "Email is required"})
+
     sub = get_subscription(email)
     is_pro = sub["has_subscription"]
 
-    if not is_pro and format_type not in FREE_FORMATS:
-        return jsonify({"success": False, "upgrade_required": True,
-                        "error": f"{format_type.title()} is a Pro feature."})
+    # Log for debugging
+    print(f"Transform request - Email: {email} | Is Pro: {is_pro} | Format: {format_type} | Has Yoruba: {is_multilingual(raw_text)}")
 
-    if not is_pro and not instruction and is_multilingual(raw_text):
-        return jsonify({"success": False, "upgrade_required": True,
-                        "error": "Multilingual input is a Pro feature."})
+    # PRO USERS HAVE NO RESTRICTIONS
+    if is_pro:
+        print(f"✅ Pro user detected - granting full access")
+    else:
+        # Free user restrictions
+        FREE_FORMATS = ['email', 'conversation']
+        if format_type not in FREE_FORMATS:
+            return jsonify({"success": False, "upgrade_required": True,
+                            "error": f"{format_type.title()} is a Pro feature."})
 
-    if not is_pro:
+        if not instruction and is_multilingual(raw_text):
+            return jsonify({"success": False, "upgrade_required": True,
+                            "error": "Multilingual input (Yoruba, Pidgin, etc.) is a Pro feature."})
+
         usage = get_usage(email)
         if usage >= 5:
             return jsonify({"success": False, "upgrade_required": True,
                             "error": "You have used all 5 free transforms this month."})
 
+    # Build prompt (same as before)
     format_guides = {
         "email": "Write a professional email. Include: Subject line, greeting, body paragraphs, sign-off.",
         "essay": "Write an essay. NO greeting. Start with intro paragraph. Academic prose. No bullet points.",
@@ -311,7 +323,7 @@ def transform():
         prompt = f"{instruction}:\n\n{raw_text}\n\nOutput ONLY the adjusted message. No labels or preamble."
     else:
         prompt = f"""You are Kindred, an expert multilingual AI writing assistant.
-The user may write in ANY language. Understand their intent and transform it into polished English.
+The user may write in ANY language including Yoruba and Pidgin. Understand their intent and transform it into polished, natural English.
 FORMAT: {format_type.upper()}
 TONE: {tone}
 Format instructions:
@@ -337,8 +349,8 @@ Output ONLY the final {format_type}. No labels, no explanation."""
             return jsonify({"success": False, "error": "AI error: " + str(result)})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
-
-
+    
+    
 # ── ENSURE NEW USER IS FREE
 @app.route('/ensure-free-user', methods=['POST'])
 def ensure_free_user():
